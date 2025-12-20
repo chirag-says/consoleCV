@@ -10,6 +10,8 @@
   },
   "dependencies": {
     "@types/bcryptjs": "^2.4.6",
+    "@upstash/ratelimit": "^2.0.7",
+    "@upstash/redis": "^1.35.8",
     "bcryptjs": "^3.0.3",
     "lucide-react": "^0.562.0",
     "mongodb": "^7.0.0",
@@ -18,7 +20,8 @@
     "next-auth": "^5.0.0-beta.30",
     "react": "^18",
     "react-dom": "^18",
-    "react-to-print": "^3.2.0"
+    "react-to-print": "^3.2.0",
+    "zod": "^4.2.1"
   },
   "devDependencies": {
     "@types/node": "^20",
