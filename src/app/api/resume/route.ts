@@ -1,51 +1,72 @@
-// InternDeck - Resume API Route
-// Handles saving and retrieving resumes from MongoDB
+// ConsoleCV - Resume API Route (List & Create)
+// Handles listing user resumes and creating new ones
 
 import { NextRequest, NextResponse } from "next/server";
+import { auth } from "@/auth";
 import dbConnect from "@/lib/db";
 import Resume from "@/models/Resume";
-import type { ResumeData } from "@/types/resume";
 
-// POST - Save a new resume
-export async function POST(request: NextRequest) {
+// GET - Fetch all resumes for the logged-in user
+export async function GET() {
     try {
+        const session = await auth();
+
+        if (!session?.user?.id) {
+            return NextResponse.json(
+                { success: false, error: "Unauthorized" },
+                { status: 401 }
+            );
+        }
+
         await dbConnect();
 
-        const data: ResumeData = await request.json();
+        const resumes = await Resume.find({ userId: session.user.id })
+            .select("_id title personal.fullName updatedAt createdAt")
+            .sort({ updatedAt: -1 })
+            .lean();
 
-        // Create new resume
-        const resume = await Resume.create(data);
-
-        return NextResponse.json(
-            { success: true, data: resume },
-            { status: 201 }
-        );
+        return NextResponse.json({ success: true, data: resumes }, { status: 200 });
     } catch (error) {
-        console.error("Error saving resume:", error);
+        console.error("Error fetching resumes:", error);
         return NextResponse.json(
-            { success: false, error: "Failed to save resume" },
+            { success: false, error: "Failed to fetch resumes" },
             { status: 500 }
         );
     }
 }
 
-// GET - Retrieve all resumes (for future use)
-export async function GET() {
+// POST - Create a new resume for the logged-in user
+export async function POST(request: NextRequest) {
     try {
+        const session = await auth();
+
+        if (!session?.user?.id) {
+            return NextResponse.json(
+                { success: false, error: "Unauthorized" },
+                { status: 401 }
+            );
+        }
+
         await dbConnect();
 
-        const resumes = await Resume.find({})
-            .sort({ updatedAt: -1 })
-            .limit(10);
+        const body = await request.json();
+
+        // Create resume with authenticated user's ID (override any userId in body)
+        const resume = await Resume.create({
+            ...body,
+            userId: session.user.id, // Force userId from session
+            title: body.title || "Untitled Resume",
+        });
 
         return NextResponse.json(
-            { success: true, data: resumes },
-            { status: 200 }
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            { success: true, data: { _id: (resume as any)._id.toString() } },
+            { status: 201 }
         );
     } catch (error) {
-        console.error("Error fetching resumes:", error);
+        console.error("Error creating resume:", error);
         return NextResponse.json(
-            { success: false, error: "Failed to fetch resumes" },
+            { success: false, error: "Failed to create resume" },
             { status: 500 }
         );
     }

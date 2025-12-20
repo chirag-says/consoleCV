@@ -1,11 +1,13 @@
-// InternDeck - Mongoose Resume Model
+// ConsoleCV - Mongoose Resume Model
 // Defines the MongoDB schema for storing resume data
 
 import mongoose, { Schema, Document, Model } from "mongoose";
 import type { ResumeData } from "@/types/resume";
 
 // Document interface extending ResumeData with Mongoose Document properties
-export interface IResume extends ResumeData, Document {
+export interface IResume extends Omit<ResumeData, "_id" | "userId">, Document {
+    userId: mongoose.Types.ObjectId;
+    title: string;
     createdAt: Date;
     updatedAt: Date;
 }
@@ -59,6 +61,16 @@ const ProjectSchema = new Schema(
 // Main Resume Schema
 const ResumeSchema = new Schema<IResume>(
     {
+        userId: {
+            type: Schema.Types.ObjectId,
+            ref: "User",
+            required: true,
+            index: true,
+        },
+        title: {
+            type: String,
+            default: "Untitled Resume",
+        },
         personal: { type: PersonalSchema, default: () => ({}) },
         education: { type: [EducationSchema], default: [] },
         experience: { type: [ExperienceSchema], default: [] },
@@ -69,6 +81,9 @@ const ResumeSchema = new Schema<IResume>(
         timestamps: true,
     }
 );
+
+// Compound index for efficient user queries
+ResumeSchema.index({ userId: 1, updatedAt: -1 });
 
 // Prevent model recompilation in development
 const Resume: Model<IResume> =
