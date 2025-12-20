@@ -1,0 +1,43 @@
+import type { Metadata } from "next";
+import localFont from "next/font/local";
+import "./globals.css";
+
+const geistSans = localFont({
+  src: "./fonts/GeistVF.woff",
+  variable: "--font-geist-sans",
+  weight: "100 900",
+});
+const geistMono = localFont({
+  src: "./fonts/GeistMonoVF.woff",
+  variable: "--font-geist-mono",
+  weight: "100 900",
+});
+
+export const metadata: Metadata = {
+  title: "InternDeck - Resume Builder for Software Interns",
+  description:
+    "Build professional resumes tailored for software engineering internships. Import GitHub projects, get smart suggestions, and export to PDF.",
+  keywords: [
+    "resume builder",
+    "software intern",
+    "developer resume",
+    "github import",
+    "internship",
+  ],
+};
+
+export default function RootLayout({
+  children,
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
+  return (
+    <html lang="en" className="dark">
+      <body
+        className={`${geistSans.variable} ${geistMono.variable} font-sans antialiased`}
+      >
+        {children}
+      </body>
+    </html>
+  );
+}
