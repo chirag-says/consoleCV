@@ -1,12 +1,12 @@
 "use client";
 
 // ConsoleCV - Editor Page
-// Refactored to fetch resume data by ID and save to DB
+// Resume editor with real-time PDF preview using @react-pdf/renderer
 
-import React, { useState, useRef, useEffect } from "react";
-import { useReactToPrint } from "react-to-print";
+import React, { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import {
     Download,
     Save,
@@ -26,7 +26,35 @@ import {
     ProjectsForm,
     SkillsForm,
 } from "@/components/editor";
-import ResumePreview from "@/components/preview/ResumePreview";
+
+// Dynamically import PDF components to avoid SSR issues
+const PdfPreview = dynamic(
+    () => import("@/components/templates/PdfPreview").then((mod) => mod.PdfPreview),
+    {
+        ssr: false,
+        loading: () => (
+            <div className="flex items-center justify-center h-full bg-slate-900/50 rounded-lg">
+                <Loader2 className="w-8 h-8 text-emerald-500 animate-spin" />
+            </div>
+        ),
+    }
+);
+
+const PdfDownloadButton = dynamic(
+    () => import("@/components/templates/PdfPreview").then((mod) => mod.PdfDownloadButton),
+    {
+        ssr: false,
+        loading: () => (
+            <button
+                disabled
+                className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-emerald-600 to-cyan-600 text-white font-medium rounded-lg opacity-50"
+            >
+                <Download className="w-4 h-4" />
+                Export
+            </button>
+        ),
+    }
+);
 
 // Collapsible section component
 interface CollapsibleSectionProps {
@@ -98,15 +126,6 @@ export default function EditorPage() {
             fetchResume();
         }
     }, [resumeId, router]);
-
-    // Ref for the printable resume component
-    const resumeRef = useRef<HTMLDivElement>(null);
-
-    // React-to-print hook
-    const handlePrint = useReactToPrint({
-        contentRef: resumeRef,
-        documentTitle: `${resumeData.personal.fullName || "Resume"}_ConsoleCV`,
-    });
 
     // Update handlers for each section
     const updatePersonal = (personal: ResumeData["personal"]) => {
@@ -200,8 +219,8 @@ export default function EditorPage() {
                             {saveMessage && (
                                 <span
                                     className={`text-sm ${saveMessage.includes("Saved")
-                                            ? "text-emerald-400"
-                                            : "text-red-400"
+                                        ? "text-emerald-400"
+                                        : "text-red-400"
                                         }`}
                                 >
                                     {saveMessage}
@@ -219,13 +238,13 @@ export default function EditorPage() {
                                 )}
                                 Save
                             </button>
-                            <button
-                                onClick={() => handlePrint()}
+                            <PdfDownloadButton
+                                data={resumeData}
                                 className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-emerald-600 to-cyan-600 hover:from-emerald-500 hover:to-cyan-500 text-white font-medium rounded-lg transition-all shadow-lg shadow-emerald-500/20"
                             >
                                 <Download className="w-4 h-4" />
-                                Export
-                            </button>
+                                Export PDF
+                            </PdfDownloadButton>
                         </div>
                     </div>
                 </div>
@@ -242,12 +261,12 @@ export default function EditorPage() {
                                 <Sparkles className="w-5 h-5 text-emerald-400 mt-0.5" />
                                 <div>
                                     <p className="text-sm text-slate-200 font-medium">
-                                        Smart Suggestions Enabled
+                                        LaTeX-Style PDF Export
                                     </p>
                                     <p className="text-xs text-slate-400 mt-1">
-                                        Type keywords like &quot;React&quot;, &quot;Python&quot;, or
-                                        &quot;API&quot; in description fields to get bullet point
-                                        suggestions.
+                                        Your resume is rendered as a professional PDF using
+                                        academic typography. Perfect for ATS systems and
+                                        professional applications.
                                     </p>
                                 </div>
                             </div>
@@ -300,28 +319,21 @@ export default function EditorPage() {
                         </CollapsibleSection>
                     </div>
 
-                    {/* Right Side - Preview */}
+                    {/* Right Side - PDF Preview */}
                     <div className="w-1/2 sticky top-24">
-                        <div className="bg-slate-900/50 rounded-xl p-6 border border-slate-800/50">
-                            <div className="flex items-center justify-between mb-4">
+                        <div className="bg-slate-900/50 rounded-xl p-4 border border-slate-800/50 h-[calc(100vh-10rem)]">
+                            <div className="flex items-center justify-between mb-3">
                                 <h2 className="text-lg font-semibold text-white">
-                                    Live Preview
+                                    PDF Preview
                                 </h2>
-                                <span className="text-xs text-slate-500">A4 Format</span>
+                                <span className="text-xs text-slate-500 bg-slate-800 px-2 py-1 rounded">
+                                    A4 • LaTeX Style
+                                </span>
                             </div>
 
-                            {/* Preview Container with Scaled A4 */}
-                            <div className="overflow-auto max-h-[calc(100vh-14rem)] rounded-lg bg-slate-950/50">
-                                <div
-                                    className="origin-top-left"
-                                    style={{
-                                        transform: "scale(0.5)",
-                                        transformOrigin: "top center",
-                                        width: "200%",
-                                    }}
-                                >
-                                    <ResumePreview ref={resumeRef} data={resumeData} />
-                                </div>
+                            {/* PDF Viewer Container */}
+                            <div className="h-[calc(100%-3rem)] rounded-lg overflow-hidden bg-slate-800">
+                                <PdfPreview data={resumeData} />
                             </div>
                         </div>
                     </div>
@@ -330,3 +342,4 @@ export default function EditorPage() {
         </div>
     );
 }
+
