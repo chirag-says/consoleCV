@@ -67,8 +67,8 @@ const nextConfig = {
                             "img-src 'self' data: blob: https:",
                             // Fonts: self and Google Fonts
                             "font-src 'self' https://fonts.gstatic.com data:",
-                            // Connect: API calls
-                            "connect-src 'self' https://vercel.live https://*.vercel.com wss://*.vercel.com https://vitals.vercel-insights.com",
+                            // Connect: API calls (GitHub API + raw files needed for repo analysis)
+                            "connect-src 'self' https://api.github.com https://raw.githubusercontent.com https://vercel.live https://*.vercel.com wss://*.vercel.com https://vitals.vercel-insights.com",
                             // Frames: same origin and blob: (needed for @react-pdf/renderer PDFViewer)
                             "frame-src 'self' blob:",
                             // Form submissions: same origin only
