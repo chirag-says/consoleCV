@@ -17,7 +17,7 @@ import {
     Loader2,
     ArrowLeft,
 } from "lucide-react";
-import type { ResumeData } from "@/types/resume";
+import type { ResumeData, TemplateId } from "@/types/resume";
 import { defaultResumeData } from "@/types/resume";
 import {
     PersonalForm,
@@ -25,6 +25,7 @@ import {
     ExperienceForm,
     ProjectsForm,
     SkillsForm,
+    TemplateSelector,
 } from "@/components/editor";
 
 // Dynamically import PDF components to avoid SSR issues
@@ -148,6 +149,10 @@ export default function EditorPage() {
         setResumeData((prev) => ({ ...prev, skills }));
     };
 
+    const updateTemplate = (templateId: TemplateId) => {
+        setResumeData((prev) => ({ ...prev, templateId }));
+    };
+
     // Save to database
     const handleSave = async () => {
         setIsSaving(true);
@@ -255,18 +260,26 @@ export default function EditorPage() {
                 <div className="flex gap-6">
                     {/* Left Side - Editor */}
                     <div className="w-1/2 space-y-4 max-h-[calc(100vh-8rem)] overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-slate-700 scrollbar-track-transparent">
+                        {/* Template Selector */}
+                        <div className="p-4 bg-gradient-to-r from-slate-800/50 to-slate-800/30 border border-slate-700/50 rounded-xl">
+                            <TemplateSelector
+                                selectedTemplate={resumeData.templateId || "latex"}
+                                onChange={updateTemplate}
+                            />
+                        </div>
+
                         {/* Smart Tips Banner */}
                         <div className="p-4 bg-gradient-to-r from-emerald-500/10 to-cyan-500/10 border border-emerald-500/20 rounded-xl">
                             <div className="flex items-start gap-3">
                                 <Sparkles className="w-5 h-5 text-emerald-400 mt-0.5" />
                                 <div>
                                     <p className="text-sm text-slate-200 font-medium">
-                                        LaTeX-Style PDF Export
+                                        {resumeData.templateId === "modern" ? "Modern Two-Column Design" : "LaTeX-Style PDF Export"}
                                     </p>
                                     <p className="text-xs text-slate-400 mt-1">
-                                        Your resume is rendered as a professional PDF using
-                                        academic typography. Perfect for ATS systems and
-                                        professional applications.
+                                        {resumeData.templateId === "modern"
+                                            ? "A sleek, two-column layout with dark sidebar. Perfect for modern tech roles."
+                                            : "Your resume is rendered as a professional PDF using academic typography. Perfect for ATS systems and professional applications."}
                                     </p>
                                 </div>
                             </div>
@@ -327,7 +340,7 @@ export default function EditorPage() {
                                     PDF Preview
                                 </h2>
                                 <span className="text-xs text-slate-500 bg-slate-800 px-2 py-1 rounded">
-                                    A4 • LaTeX Style
+                                    A4 • {resumeData.templateId === "modern" ? "Modern" : "LaTeX"} Style
                                 </span>
                             </div>
 

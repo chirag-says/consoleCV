@@ -31,10 +31,14 @@ export interface Project {
     link: string;
 }
 
+// Template ID type for type-safe template selection
+export type TemplateId = "latex" | "modern";
+
 export interface ResumeData {
     _id?: string;
     userId?: string;
     title?: string;
+    templateId?: TemplateId;
     personal: PersonalInfo;
     education: Education[];
     experience: Experience[];

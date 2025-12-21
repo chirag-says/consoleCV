@@ -2,9 +2,9 @@
 
 // ConsoleCV - PDF Preview Wrapper Component
 // Client-side wrapper for @react-pdf/renderer PDFViewer
-// Uses dynamic import to avoid SSR issues
+// Supports dynamic template switching via the Template Registry
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { Loader2, Download } from "lucide-react";
 import {
     Document,
@@ -18,6 +18,7 @@ import {
     PDFDownloadLink,
 } from "@react-pdf/renderer";
 import type { ResumeData } from "@/types/resume";
+import { getTemplate } from "@/components/templates";
 
 // =============================================================================
 // FONT CONFIGURATION
@@ -397,6 +398,11 @@ export function PdfPreview({ data, className = "" }: PdfPreviewProps) {
         setIsClient(true);
     }, []);
 
+    // Get the active template component based on templateId
+    const TemplateComponent = useMemo(() => {
+        return getTemplate(data.templateId);
+    }, [data.templateId]);
+
     if (!isClient) {
         return <PdfLoadingState />;
     }
@@ -412,7 +418,7 @@ export function PdfPreview({ data, className = "" }: PdfPreviewProps) {
                 }}
                 showToolbar={false}
             >
-                <ResumePdfDocument data={data} />
+                <TemplateComponent data={data} />
             </PDFViewer>
         </div>
     );
@@ -439,6 +445,11 @@ export function PdfDownloadButton({
         setIsClient(true);
     }, []);
 
+    // Get the active template component based on templateId
+    const TemplateComponent = useMemo(() => {
+        return getTemplate(data.templateId);
+    }, [data.templateId]);
+
     if (!isClient) {
         return (
             <button disabled className={className}>
@@ -449,11 +460,12 @@ export function PdfDownloadButton({
     }
 
     const fileName = `${data.personal.fullName || "Resume"}_ConsoleCV.pdf`;
+    const templateSuffix = data.templateId === "modern" ? "_Modern" : "";
 
     return (
         <PDFDownloadLink
-            document={<ResumePdfDocument data={data} />}
-            fileName={fileName}
+            document={<TemplateComponent data={data} />}
+            fileName={fileName.replace(".pdf", `${templateSuffix}.pdf`)}
             className={className}
         >
             {({ loading }) =>
