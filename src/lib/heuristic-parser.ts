@@ -65,33 +65,196 @@ const SECTION_HEADERS = {
 };
 
 // =============================================================================
-// TECH KEYWORDS FOR SKILLS EXTRACTION (50+ common tech terms)
+// TECH KEYWORDS FOR SKILLS EXTRACTION (300+ comprehensive terms)
 // =============================================================================
 
 const TECH_KEYWORDS: string[] = [
-    // Programming Languages
-    "JavaScript", "TypeScript", "Python", "Java", "C++", "C#", "Ruby", "Go",
-    "Golang", "Rust", "Swift", "Kotlin", "PHP", "Scala", "Perl", "R",
-    // Frontend
-    "React", "Vue", "Angular", "Next.js", "Nuxt", "Svelte", "HTML", "CSS",
-    "SASS", "SCSS", "Tailwind", "Bootstrap", "jQuery", "Redux", "Zustand",
-    // Backend
-    "Node.js", "Express", "FastAPI", "Django", "Flask", "Spring", "Rails",
-    "Laravel", "ASP.NET", "NestJS", "Fastify",
-    // Databases
-    "MongoDB", "PostgreSQL", "MySQL", "Redis", "Elasticsearch", "SQLite",
-    "Firebase", "Supabase", "DynamoDB", "Cassandra", "Neo4j",
-    // Cloud & DevOps
-    "AWS", "Azure", "GCP", "Docker", "Kubernetes", "Terraform", "Jenkins",
-    "GitHub Actions", "CI/CD", "Linux", "Nginx", "Apache",
-    // Mobile
-    "React Native", "Flutter", "iOS", "Android", "SwiftUI", "Jetpack Compose",
-    // AI/ML
-    "TensorFlow", "PyTorch", "Pandas", "NumPy", "Scikit-learn", "OpenAI",
-    "LangChain", "Machine Learning", "Deep Learning", "NLP", "Computer Vision",
-    // Other Tools
-    "Git", "REST", "GraphQL", "WebSocket", "OAuth", "JWT", "Figma",
-    "Jira", "Agile", "Scrum", "VS Code", "Vim", "Postman",
+    // =========================================================================
+    // PROGRAMMING LANGUAGES
+    // =========================================================================
+    "JavaScript", "TypeScript", "Python", "Java", "C++", "C#", "C", "Ruby", "Go",
+    "Golang", "Rust", "Swift", "Kotlin", "PHP", "Scala", "Perl", "R", "Matlab",
+    "Dart", "Elixir", "Erlang", "Haskell", "Lua", "Julia", "Clojure", "F#",
+    "Assembly", "VBA", "Objective-C", "COBOL", "Fortran", "Groovy", "Solidity",
+    "Bash", "Shell", "PowerShell", "SQL", "PL/SQL", "T-SQL",
+
+    // =========================================================================
+    // FRONTEND FRAMEWORKS & LIBRARIES
+    // =========================================================================
+    "React", "React.js", "Vue", "Vue.js", "Angular", "AngularJS", "Next.js",
+    "Nuxt", "Nuxt.js", "Svelte", "SvelteKit", "Solid.js", "Preact", "Remix",
+    "Gatsby", "Astro", "Qwik", "Ember.js", "Backbone.js", "Alpine.js",
+    "HTML", "HTML5", "CSS", "CSS3", "SASS", "SCSS", "Less", "Stylus",
+    "Tailwind", "Tailwind CSS", "TailwindCSS", "Bootstrap", "Material UI", "MUI",
+    "Chakra UI", "Chakra", "Ant Design", "Semantic UI", "Bulma", "Foundation",
+    "Styled Components", "Emotion", "CSS Modules", "PostCSS",
+    "Three.js", "WebGL", "D3.js", "D3", "Chart.js", "ECharts", "Highcharts",
+    "jQuery", "Redux", "Redux Toolkit", "Zustand", "MobX", "Recoil", "Jotai",
+    "XState", "React Query", "TanStack Query", "SWR", "Apollo Client",
+    "Vite", "Webpack", "Rollup", "Parcel", "esbuild", "Turbopack", "Snowpack",
+    "Babel", "ESLint", "Prettier", "Storybook", "Cypress", "Playwright",
+    "Jest", "Vitest", "Mocha", "Jasmine", "Testing Library", "Puppeteer",
+    "Framer Motion", "GSAP", "Anime.js", "Lottie",
+
+    // =========================================================================
+    // BACKEND FRAMEWORKS & RUNTIME
+    // =========================================================================
+    "Node.js", "Node", "Express", "Express.js", "Fastify", "Koa", "Hapi",
+    "NestJS", "Nest.js", "AdonisJS", "Sails.js", "Feathers.js",
+    "Django", "Flask", "FastAPI", "Tornado", "Pyramid", "Celery",
+    "Ruby on Rails", "Rails", "Sinatra", "Hanami",
+    "Spring", "Spring Boot", "Spring MVC", "Hibernate", "Maven", "Gradle",
+    "ASP.NET", ".NET", ".NET Core", "Entity Framework", "Blazor",
+    "Laravel", "Symfony", "CodeIgniter", "Yii", "CakePHP", "Slim",
+    "Gin", "Echo", "Fiber", "Chi", "Buffalo",
+    "Phoenix", "Ecto",
+    "Actix", "Rocket", "Axum", "Warp",
+    "GraphQL", "Apollo Server", "Prisma", "TypeORM", "Sequelize", "Mongoose",
+    "Drizzle", "Kysely", "Knex", "MikroORM",
+
+    // =========================================================================
+    // DATABASES
+    // =========================================================================
+    "MongoDB", "PostgreSQL", "Postgres", "MySQL", "MariaDB", "SQLite",
+    "Redis", "Memcached", "Elasticsearch", "OpenSearch",
+    "Firebase", "Firestore", "Supabase", "PlanetScale", "Neon",
+    "DynamoDB", "Cassandra", "CouchDB", "CouchBase", "Neo4j", "ArangoDB",
+    "InfluxDB", "TimescaleDB", "ClickHouse", "Snowflake", "BigQuery",
+    "Oracle", "SQL Server", "Microsoft SQL Server", "MSSQL", "DB2",
+    "Realm", "LevelDB", "RocksDB", "BoltDB", "BadgerDB",
+    "Pinecone", "Weaviate", "Milvus", "Chroma", "Qdrant", "FAISS",
+
+    // =========================================================================
+    // CLOUD & DEVOPS
+    // =========================================================================
+    "AWS", "Amazon Web Services", "EC2", "S3", "Lambda", "ECS", "EKS",
+    "CloudFront", "Route 53", "RDS", "SQS", "SNS", "API Gateway",
+    "Azure", "Microsoft Azure", "Azure Functions", "Azure DevOps",
+    "GCP", "Google Cloud", "Google Cloud Platform", "Cloud Run", "Cloud Functions",
+    "Compute Engine", "App Engine", "Kubernetes Engine", "GKE",
+    "Docker", "Kubernetes", "K8s", "Helm", "Istio", "Linkerd",
+    "Terraform", "Pulumi", "CloudFormation", "Ansible", "Chef", "Puppet",
+    "Jenkins", "CircleCI", "Travis CI", "GitHub Actions", "GitLab CI",
+    "ArgoCD", "Flux", "Spinnaker", "Tekton",
+    "Linux", "Ubuntu", "Debian", "CentOS", "RHEL", "Alpine", "Fedora",
+    "Nginx", "Apache", "Caddy", "HAProxy", "Traefik", "Envoy",
+    "CI/CD", "DevOps", "GitOps", "SRE", "Infrastructure as Code", "IaC",
+    "Prometheus", "Grafana", "Datadog", "New Relic", "Splunk", "ELK Stack",
+    "Logstash", "Kibana", "Jaeger", "Zipkin", "OpenTelemetry",
+    "Vault", "Consul", "Nomad",
+    "Vercel", "Netlify", "Heroku", "Render", "Railway", "Fly.io", "DigitalOcean",
+    "Cloudflare", "Cloudflare Workers", "Deno Deploy", "Bun",
+
+    // =========================================================================
+    // MOBILE DEVELOPMENT
+    // =========================================================================
+    "React Native", "Flutter", "Expo", "Ionic", "Capacitor", "Cordova",
+    "iOS", "Android", "SwiftUI", "UIKit", "Jetpack Compose", "Kotlin Multiplatform",
+    "Xamarin", "MAUI", ".NET MAUI", "NativeScript",
+    "Xcode", "Android Studio", "Gradle", "CocoaPods", "Swift Package Manager",
+
+    // =========================================================================
+    // DATA SCIENCE & MACHINE LEARNING
+    // =========================================================================
+    "TensorFlow", "PyTorch", "Keras", "Scikit-learn", "sklearn",
+    "Pandas", "NumPy", "SciPy", "Matplotlib", "Seaborn", "Plotly",
+    "Jupyter", "Jupyter Notebook", "JupyterLab", "Google Colab",
+    "OpenAI", "GPT", "GPT-4", "ChatGPT", "LangChain", "LlamaIndex",
+    "Hugging Face", "Transformers", "BERT", "LLM", "RAG",
+    "Computer Vision", "NLP", "Natural Language Processing",
+    "Machine Learning", "Deep Learning", "Neural Networks", "CNN", "RNN", "LSTM",
+    "Reinforcement Learning", "MLOps", "MLflow", "Kubeflow", "SageMaker",
+    "Apache Spark", "Spark", "PySpark", "Hadoop", "Hive", "Pig", "Flink", "Kafka",
+    "Airflow", "Apache Airflow", "Dagster", "Prefect", "dbt",
+    "Tableau", "Power BI", "PowerBI", "Looker", "Metabase", "Superset",
+    "Data Engineering", "ETL", "Data Warehouse", "Data Lake", "Data Pipeline",
+    "Statistical Analysis", "A/B Testing", "Feature Engineering",
+
+    // =========================================================================
+    // DESIGN & CREATIVE TOOLS
+    // =========================================================================
+    "Figma", "Sketch", "Adobe XD", "InVision", "Zeplin", "Framer",
+    "Photoshop", "Adobe Photoshop", "Illustrator", "Adobe Illustrator",
+    "After Effects", "Premiere Pro", "Final Cut Pro",
+    "Blender", "Maya", "Cinema 4D", "ZBrush", "Unity", "Unreal Engine",
+    "UI/UX", "UI Design", "UX Design", "User Research", "Wireframing",
+    "Prototyping", "Design Systems", "Accessibility", "WCAG", "a11y",
+    "Responsive Design", "Mobile-First", "Motion Design",
+    "Canva", "Notion", "Miro", "Whimsical", "Lucidchart",
+
+    // =========================================================================
+    // API & COMMUNICATION
+    // =========================================================================
+    "REST", "RESTful", "REST API", "GraphQL", "gRPC", "SOAP",
+    "WebSocket", "WebSockets", "Socket.io", "Server-Sent Events", "SSE",
+    "OAuth", "OAuth2", "JWT", "JSON Web Token", "SAML", "OpenID Connect", "OIDC",
+    "API Gateway", "Swagger", "OpenAPI", "Postman", "Insomnia",
+    "RabbitMQ", "Apache Kafka", "NATS", "ZeroMQ", "ActiveMQ", "MQTT",
+    "Webhooks", "Microservices", "Service Mesh", "Event-Driven",
+
+    // =========================================================================
+    // VERSION CONTROL & COLLABORATION
+    // =========================================================================
+    "Git", "GitHub", "GitLab", "Bitbucket", "SVN", "Mercurial",
+    "Jira", "Confluence", "Trello", "Asana", "Linear", "Monday.com",
+    "Slack", "Microsoft Teams", "Discord", "Zoom",
+    "VS Code", "Visual Studio Code", "Visual Studio", "IntelliJ", "WebStorm",
+    "PyCharm", "Eclipse", "Vim", "Neovim", "Emacs", "Sublime Text", "Atom",
+
+    // =========================================================================
+    // TESTING
+    // =========================================================================
+    "Unit Testing", "Integration Testing", "E2E Testing", "End-to-End Testing",
+    "TDD", "Test-Driven Development", "BDD", "Behavior-Driven Development",
+    "Selenium", "WebDriver", "Appium", "Detox", "Espresso", "XCTest",
+    "JUnit", "TestNG", "pytest", "RSpec", "PHPUnit", "NUnit", "xUnit",
+    "Coverage", "Code Coverage", "Load Testing", "Performance Testing",
+    "k6", "Locust", "JMeter", "Gatling", "Artillery",
+
+    // =========================================================================
+    // SECURITY & COMPLIANCE
+    // =========================================================================
+    "Cybersecurity", "Security", "InfoSec", "Application Security", "AppSec",
+    "Penetration Testing", "Pen Testing", "Vulnerability Assessment",
+    "OWASP", "SAST", "DAST", "SCA", "DevSecOps",
+    "SOC 2", "GDPR", "HIPAA", "PCI DSS", "ISO 27001", "Compliance",
+    "Encryption", "SSL/TLS", "TLS", "SSL", "PKI", "Cryptography",
+    "IAM", "RBAC", "Zero Trust", "WAF", "Firewall", "VPN",
+    "Burp Suite", "Nmap", "Wireshark", "Metasploit", "Kali Linux",
+
+    // =========================================================================
+    // SOFT SKILLS & METHODOLOGIES
+    // =========================================================================
+    "Agile", "Scrum", "Kanban", "Lean", "XP", "Extreme Programming",
+    "SAFe", "Waterfall", "Sprint Planning", "Retrospective",
+    "Project Management", "Product Management", "Program Management",
+    "Leadership", "Team Lead", "Tech Lead", "Mentoring", "Coaching",
+    "Communication", "Presentation", "Public Speaking", "Technical Writing",
+    "Problem Solving", "Critical Thinking", "Analytical Skills",
+    "Collaboration", "Cross-Functional", "Stakeholder Management",
+    "Time Management", "Prioritization", "Decision Making",
+    "Remote Work", "Distributed Teams", "Async Communication",
+
+    // =========================================================================
+    // BLOCKCHAIN & WEB3
+    // =========================================================================
+    "Blockchain", "Ethereum", "Bitcoin", "Smart Contracts", "Solidity",
+    "Web3", "Web3.js", "Ethers.js", "Hardhat", "Truffle", "Foundry",
+    "DeFi", "NFT", "DAO", "Tokenomics", "Metamask", "Wallet Connect",
+    "IPFS", "Polygon", "Solana", "Avalanche", "Cosmos", "Polkadot",
+
+    // =========================================================================
+    // OTHER TOOLS & CONCEPTS
+    // =========================================================================
+    "CMS", "WordPress", "Drupal", "Strapi", "Contentful", "Sanity", "Ghost",
+    "Headless CMS", "JAMstack", "Static Site Generator", "SSG", "SSR",
+    "PWA", "Progressive Web App", "Service Worker", "Web Vitals", "SEO",
+    "Internationalization", "i18n", "Localization", "l10n",
+    "Low-Code", "No-Code", "Automation", "RPA", "Zapier", "n8n", "Make",
+    "Twilio", "SendGrid", "Stripe", "PayPal", "Shopify", "Magento",
+    "Auth0", "Okta", "Clerk", "Firebase Auth", "Supabase Auth",
+    "Socket", "TCP/IP", "HTTP", "HTTPS", "DNS", "CDN",
+    "Caching", "Performance Optimization", "Lazy Loading", "Code Splitting",
 ];
 
 // =============================================================================
@@ -520,14 +683,88 @@ function parseProjects(content: string): Project[] {
     return projects;
 }
 
+// =============================================================================
+// STOP WORDS (exclude from skill extraction)
+// =============================================================================
+
+const SKILL_STOP_WORDS = new Set([
+    // Common articles and prepositions
+    "a", "an", "the", "and", "or", "but", "with", "without", "for", "to", "from",
+    "in", "on", "at", "by", "of", "as", "is", "are", "was", "were", "be", "been",
+    "being", "have", "has", "had", "do", "does", "did", "will", "would", "could",
+    "should", "may", "might", "must", "shall", "can", "need", "dare", "ought",
+    // Common resume filler words
+    "including", "such", "like", "etc", "also", "other", "others", "more", "less",
+    "very", "highly", "extensive", "strong", "excellent", "proficient", "experienced",
+    "skilled", "knowledge", "understanding", "familiarity", "exposure", "experience",
+    // Section headers that might slip through
+    "skills", "technical", "technologies", "tools", "languages", "frameworks",
+    "software", "hardware", "platforms", "systems", "applications", "programming",
+    // Time-related words
+    "years", "year", "months", "month", "weeks", "week", "days", "day",
+    // Generic descriptors
+    "using", "used", "use", "various", "multiple", "several", "many", "all",
+    "new", "latest", "modern", "current", "related", "based", "level",
+]);
+
 /**
- * Extract skills from skills section or entire document
+ * Check if a string looks like a valid skill candidate
+ */
+function isValidSkillCandidate(text: string): boolean {
+    const trimmed = text.trim();
+
+    // Too short or too long
+    if (trimmed.length < 2 || trimmed.length > 40) return false;
+
+    // More than 4 words is likely a phrase, not a skill
+    const words = trimmed.split(/\s+/);
+    if (words.length > 4) return false;
+
+    // All lowercase single word that's a stop word
+    if (words.length === 1 && SKILL_STOP_WORDS.has(trimmed.toLowerCase())) return false;
+
+    // Check each word against stop words for multi-word skills
+    if (words.length > 1) {
+        const nonStopWords = words.filter(w => !SKILL_STOP_WORDS.has(w.toLowerCase()));
+        if (nonStopWords.length === 0) return false;
+    }
+
+    // Contains only numbers
+    if (/^\d+$/.test(trimmed)) return false;
+
+    // Starts with common punctuation (leftover from parsing)
+    if (/^[,;:\-•◦▪▸►➤→]/.test(trimmed)) return false;
+
+    return true;
+}
+
+/**
+ * Normalize skill name for comparison (lowercase, trimmed)
+ */
+function normalizeSkillName(skill: string): string {
+    return skill.toLowerCase().trim().replace(/\s+/g, " ");
+}
+
+/**
+ * Extract skills from skills section and entire document
+ * Uses both dictionary matching AND contextual trust for skills section items
  */
 function extractSkills(content: string, fullText: string): string[] {
-    const foundSkills = new Set<string>();
+    // Map to store skills: normalized name -> original capitalization
+    const skillsMap = new Map<string, string>();
 
-    // Search in both the skills section and full text
-    const searchText = (content + " " + fullText).toLowerCase();
+    // Helper to add a skill with proper capitalization
+    const addSkill = (skill: string, preferredCaps: string) => {
+        const normalized = normalizeSkillName(skill);
+        if (normalized && !skillsMap.has(normalized)) {
+            skillsMap.set(normalized, preferredCaps.trim());
+        }
+    };
+
+    // =========================================================================
+    // PHASE 1: Global Dictionary Scan (search entire document for known keywords)
+    // =========================================================================
+    const searchText = fullText.toLowerCase();
 
     for (const tech of TECH_KEYWORDS) {
         const lowerTech = tech.toLowerCase();
@@ -535,28 +772,105 @@ function extractSkills(content: string, fullText: string): string[] {
         // Check for exact word boundaries to avoid partial matches
         const wordBoundaryPattern = new RegExp(`\\b${escapeRegex(lowerTech)}\\b`, "i");
         if (wordBoundaryPattern.test(searchText)) {
-            foundSkills.add(tech);
+            // Use the canonical capitalization from our dictionary
+            addSkill(lowerTech, tech);
         }
     }
 
-    // Also look for comma-separated or bullet-separated lists in skills section
-    if (content) {
-        const items = content.split(/[,•|\n]/).map(s => s.trim()).filter(s => s.length > 0 && s.length < 30);
+    // =========================================================================
+    // PHASE 2: Skills Section Contextual Trust
+    // If something is explicitly listed in the Skills section, trust it
+    // =========================================================================
+    if (content && content.trim()) {
+        // Split by common delimiters: comma, pipe, bullet, newline, semicolon
+        const items = content
+            .split(/[,|•◦▪▸►➤→;\n]+/)
+            .map(s => s.trim())
+            .filter(s => s.length > 0);
+
         for (const item of items) {
-            // If it looks like a skill (short, no sentences)
-            if (!item.includes(" ") || item.split(" ").length <= 3) {
-                // Check if it matches any known tech
-                const lowerItem = item.toLowerCase();
-                for (const tech of TECH_KEYWORDS) {
-                    if (lowerItem === tech.toLowerCase() || lowerItem.includes(tech.toLowerCase())) {
-                        foundSkills.add(tech);
+            // Clean up the item (remove leading/trailing special chars)
+            let cleanItem = item
+                .replace(/^[\s\-:]+/, "")
+                .replace(/[\s\-:]+$/, "")
+                .trim();
+
+            // Skip if too long (likely a sentence, not a skill)
+            if (!isValidSkillCandidate(cleanItem)) continue;
+
+            // First, check if it matches a known keyword (case-insensitive)
+            const lowerItem = cleanItem.toLowerCase();
+            let foundInDict = false;
+
+            for (const tech of TECH_KEYWORDS) {
+                const lowerTech = tech.toLowerCase();
+                // Exact match or the item contains the tech keyword
+                if (lowerItem === lowerTech ||
+                    (lowerItem.includes(lowerTech) && lowerTech.length >= 3)) {
+                    addSkill(lowerTech, tech);
+                    foundInDict = true;
+                    break;
+                }
+            }
+
+            // CONTEXTUAL TRUST: If not in dictionary but looks valid,
+            // accept it as a skill (preserving original capitalization)
+            if (!foundInDict && isValidSkillCandidate(cleanItem)) {
+                // Apply smart capitalization: keep original if it has mixed case,
+                // otherwise title case it
+                const hasUpperCase = /[A-Z]/.test(cleanItem);
+                const hasLowerCase = /[a-z]/.test(cleanItem);
+                const isMixedCase = hasUpperCase && hasLowerCase;
+
+                let finalSkill: string;
+                if (isMixedCase || cleanItem === cleanItem.toUpperCase()) {
+                    // Keep original capitalization (e.g., "FastAPI", "AWS", "Node.js")
+                    finalSkill = cleanItem;
+                } else {
+                    // Title case for lowercase entries
+                    finalSkill = cleanItem
+                        .split(" ")
+                        .map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
+                        .join(" ");
+                }
+
+                addSkill(normalizeSkillName(finalSkill), finalSkill);
+            }
+        }
+
+        // Also try to catch colon-separated skill categories like "Languages: Python, Java"
+        const colonSections = content.split(/\n/);
+        for (const section of colonSections) {
+            if (section.includes(":")) {
+                const afterColon = section.split(":").slice(1).join(":").trim();
+                if (afterColon) {
+                    const subItems = afterColon.split(/[,|;]+/).map(s => s.trim());
+                    for (const subItem of subItems) {
+                        if (isValidSkillCandidate(subItem)) {
+                            // Check dictionary first
+                            const lowerSub = subItem.toLowerCase();
+                            let found = false;
+                            for (const tech of TECH_KEYWORDS) {
+                                if (lowerSub === tech.toLowerCase()) {
+                                    addSkill(tech.toLowerCase(), tech);
+                                    found = true;
+                                    break;
+                                }
+                            }
+                            if (!found) {
+                                addSkill(normalizeSkillName(subItem), subItem);
+                            }
+                        }
                     }
                 }
             }
         }
     }
 
-    return Array.from(foundSkills).sort();
+    // Convert map values to sorted array
+    return Array.from(skillsMap.values()).sort((a, b) =>
+        a.toLowerCase().localeCompare(b.toLowerCase())
+    );
 }
 
 /**
