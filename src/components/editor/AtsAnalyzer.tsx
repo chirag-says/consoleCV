@@ -19,6 +19,7 @@ import {
     Upload,
     File,
     Trash2,
+    Zap,
 } from "lucide-react";
 import type { ResumeData } from "@/types/resume";
 import {
@@ -34,6 +35,10 @@ import {
     formatFileSize,
     isValidPdfFile,
 } from "@/lib/pdf-parser";
+import {
+    parseResumeHeuristic,
+    getParsingConfidence,
+} from "@/lib/heuristic-parser";
 
 // =============================================================================
 // TYPES
@@ -43,6 +48,7 @@ interface AtsAnalyzerProps {
     resumeData: ResumeData;
     isOpen: boolean;
     onClose: () => void;
+    onImportData?: (data: ResumeData) => void; // Optional callback for Smart Import
 }
 
 type AnalysisMode = "current" | "upload";
@@ -291,7 +297,7 @@ function FileDropZone({ onFileSelect, isLoading, uploadedFile, onRemoveFile, err
 // MAIN COMPONENT
 // =============================================================================
 
-export function AtsAnalyzer({ resumeData, isOpen, onClose }: AtsAnalyzerProps) {
+export function AtsAnalyzer({ resumeData, isOpen, onClose, onImportData }: AtsAnalyzerProps) {
     const [mode, setMode] = useState<AnalysisMode>("current");
     const [jobDescription, setJobDescription] = useState("");
     const [isAnalyzing, setIsAnalyzing] = useState(false);
@@ -301,6 +307,10 @@ export function AtsAnalyzer({ resumeData, isOpen, onClose }: AtsAnalyzerProps) {
     const [uploadedFile, setUploadedFile] = useState<UploadedFile | null>(null);
     const [isExtracting, setIsExtracting] = useState(false);
     const [uploadError, setUploadError] = useState<string | null>(null);
+
+    // Smart Import state
+    const [isImporting, setIsImporting] = useState(false);
+    const [importResult, setImportResult] = useState<{ success: boolean; message: string; confidence?: number } | null>(null);
 
     const handleFileSelect = useCallback(async (file: File) => {
         setUploadError(null);
@@ -361,7 +371,48 @@ export function AtsAnalyzer({ resumeData, isOpen, onClose }: AtsAnalyzerProps) {
     const handleModeChange = useCallback((newMode: AnalysisMode) => {
         setMode(newMode);
         setResult(null);
+        setImportResult(null);
     }, []);
+
+    // Smart Import handler - parses PDF text into structured resume data
+    const handleSmartImport = useCallback(() => {
+        if (!uploadedFile || !onImportData) return;
+
+        setIsImporting(true);
+        setImportResult(null);
+
+        // Use setTimeout to allow UI to update
+        setTimeout(() => {
+            try {
+                // Parse the PDF text using our heuristic parser
+                const parsedData = parseResumeHeuristic(uploadedFile.text);
+                const confidence = getParsingConfidence(parsedData);
+
+                // Import the parsed data to the editor
+                onImportData(parsedData);
+
+                // Show success message with confidence score
+                setImportResult({
+                    success: true,
+                    message: `Resume imported successfully! (${confidence.score}% confidence)`,
+                    confidence: confidence.score,
+                });
+
+                // Log any parsing issues for debugging
+                if (confidence.details.length > 0) {
+                    console.log("[Smart Import] Parsing notes:", confidence.details);
+                }
+            } catch (error) {
+                console.error("[Smart Import] Error:", error);
+                setImportResult({
+                    success: false,
+                    message: "Failed to parse resume. Please check the PDF content.",
+                });
+            } finally {
+                setIsImporting(false);
+            }
+        }, 100);
+    }, [uploadedFile, onImportData]);
 
     if (!isOpen) return null;
 
@@ -409,8 +460,8 @@ export function AtsAnalyzer({ resumeData, isOpen, onClose }: AtsAnalyzerProps) {
                         <button
                             onClick={() => handleModeChange("current")}
                             className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-md text-sm font-medium transition-all ${mode === "current"
-                                    ? "bg-violet-600 text-white shadow-lg"
-                                    : "text-slate-400 hover:text-white"
+                                ? "bg-violet-600 text-white shadow-lg"
+                                : "text-slate-400 hover:text-white"
                                 }`}
                         >
                             <FileText className="w-4 h-4" />
@@ -419,8 +470,8 @@ export function AtsAnalyzer({ resumeData, isOpen, onClose }: AtsAnalyzerProps) {
                         <button
                             onClick={() => handleModeChange("upload")}
                             className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-md text-sm font-medium transition-all ${mode === "upload"
-                                    ? "bg-violet-600 text-white shadow-lg"
-                                    : "text-slate-400 hover:text-white"
+                                ? "bg-violet-600 text-white shadow-lg"
+                                : "text-slate-400 hover:text-white"
                                 }`}
                         >
                             <Upload className="w-4 h-4" />
@@ -455,6 +506,56 @@ export function AtsAnalyzer({ resumeData, isOpen, onClose }: AtsAnalyzerProps) {
                                     onRemoveFile={handleRemoveFile}
                                     error={uploadError}
                                 />
+                            )}
+
+                            {/* Smart Import Button - Only shows in upload mode with a file */}
+                            {mode === "upload" && uploadedFile && onImportData && (
+                                <div className="space-y-3">
+                                    <button
+                                        onClick={handleSmartImport}
+                                        disabled={isImporting}
+                                        className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-emerald-600 to-cyan-600 hover:from-emerald-500 hover:to-cyan-500 disabled:opacity-50 disabled:cursor-not-allowed text-white font-medium rounded-xl transition-all shadow-lg shadow-emerald-500/20"
+                                    >
+                                        {isImporting ? (
+                                            <>
+                                                <Loader2 className="w-4 h-4 animate-spin" />
+                                                Parsing Resume...
+                                            </>
+                                        ) : (
+                                            <>
+                                                <Zap className="w-4 h-4" />
+                                                Smart Import (Free)
+                                            </>
+                                        )}
+                                    </button>
+                                    <p className="text-xs text-slate-500 text-center">
+                                        Import this PDF directly into your current project
+                                    </p>
+
+                                    {/* Import Result Feedback */}
+                                    {importResult && (
+                                        <div
+                                            className={`p-3 rounded-lg flex items-center gap-2 ${importResult.success
+                                                    ? "bg-emerald-500/10 border border-emerald-500/20"
+                                                    : "bg-red-500/10 border border-red-500/20"
+                                                }`}
+                                        >
+                                            {importResult.success ? (
+                                                <CheckCircle2 className="w-4 h-4 text-emerald-400 flex-shrink-0" />
+                                            ) : (
+                                                <AlertTriangle className="w-4 h-4 text-red-400 flex-shrink-0" />
+                                            )}
+                                            <span
+                                                className={`text-xs ${importResult.success
+                                                        ? "text-emerald-300"
+                                                        : "text-red-300"
+                                                    }`}
+                                            >
+                                                {importResult.message}
+                                            </span>
+                                        </div>
+                                    )}
+                                </div>
                             )}
 
                             {/* Job Description Input */}

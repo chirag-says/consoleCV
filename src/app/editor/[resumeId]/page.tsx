@@ -368,6 +368,16 @@ export default function EditorPage() {
                 resumeData={resumeData}
                 isOpen={isAtsOpen}
                 onClose={() => setIsAtsOpen(false)}
+                onImportData={(importedData) => {
+                    // Merge imported data with existing resume metadata
+                    setResumeData((prev) => ({
+                        ...importedData,
+                        _id: prev._id,
+                        userId: prev.userId,
+                        title: prev.title || importedData.personal?.fullName || "Imported Resume",
+                        templateId: prev.templateId,
+                    }));
+                }}
             />
         </div>
     );
