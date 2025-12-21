@@ -1,128 +1,194 @@
 "use client";
 
-// ConsoleCV - Public Resume Link
-// Read-only view of a user's resume
+// ConsoleCV - Public Developer Portfolio Page
+// Dynamic portfolio page that showcases a developer's resume data
+// Uses the Space Theme by default with future support for multiple themes
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
-import { useReactToPrint } from "react-to-print";
-import { Loader2, Download, AlertCircle, Share2, Copy } from "lucide-react";
-import ResumePreview from "@/components/preview/ResumePreview";
+import { Loader2, AlertCircle, Rocket } from "lucide-react";
+import dynamic from "next/dynamic";
 import type { ResumeData } from "@/types/resume";
 
-export default function PublicResumePage() {
+// Dynamically import SpaceTheme to avoid SSR issues with framer-motion
+const SpaceTheme = dynamic(
+    () => import("@/components/portfolio/SpaceTheme"),
+    {
+        ssr: false,
+        loading: () => <PortfolioLoadingScreen />,
+    }
+);
+
+// =============================================================================
+// LOADING SCREEN COMPONENT
+// =============================================================================
+
+function PortfolioLoadingScreen() {
+    return (
+        <div className="min-h-screen bg-[#030014] flex flex-col items-center justify-center">
+            {/* Animated gradient background */}
+            <div className="fixed inset-0 pointer-events-none">
+                <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-indigo-500/20 rounded-full blur-[120px] animate-pulse" />
+                <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-pink-500/20 rounded-full blur-[120px] animate-pulse" />
+            </div>
+
+            <div className="relative z-10 flex flex-col items-center gap-6">
+                {/* Animated logo */}
+                <div className="relative">
+                    <div className="absolute inset-0 bg-gradient-to-br from-indigo-500 to-pink-500 rounded-2xl blur-xl opacity-50 animate-pulse" />
+                    <div className="relative w-20 h-20 rounded-2xl bg-gradient-to-br from-indigo-600 to-pink-600 flex items-center justify-center">
+                        <Rocket className="w-10 h-10 text-white animate-bounce" />
+                    </div>
+                </div>
+
+                <div className="flex items-center gap-3">
+                    <Loader2 className="w-5 h-5 text-indigo-400 animate-spin" />
+                    <p className="text-slate-400 text-lg">Loading portfolio...</p>
+                </div>
+
+                <p className="text-slate-600 text-sm">Preparing your developer showcase</p>
+            </div>
+        </div>
+    );
+}
+
+// =============================================================================
+// ERROR SCREEN COMPONENT
+// =============================================================================
+
+interface ErrorScreenProps {
+    message: string;
+    username: string;
+}
+
+function ErrorScreen({ message, username }: ErrorScreenProps) {
+    return (
+        <div className="min-h-screen bg-[#030014] flex flex-col items-center justify-center px-4">
+            {/* Animated gradient background */}
+            <div className="fixed inset-0 pointer-events-none">
+                <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-red-500/10 rounded-full blur-[120px]" />
+                <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-indigo-500/10 rounded-full blur-[120px]" />
+            </div>
+
+            <div className="relative z-10 text-center max-w-md">
+                {/* Error icon */}
+                <div className="mb-8">
+                    <div className="relative inline-block">
+                        <div className="absolute inset-0 bg-red-500/30 rounded-2xl blur-xl" />
+                        <div className="relative w-20 h-20 rounded-2xl bg-red-500/20 border border-red-500/30 flex items-center justify-center">
+                            <AlertCircle className="w-10 h-10 text-red-400" />
+                        </div>
+                    </div>
+                </div>
+
+                <h1 className="text-3xl sm:text-4xl font-bold text-white mb-4">
+                    Portfolio Not Found
+                </h1>
+
+                <p className="text-slate-400 mb-3">
+                    We couldn&apos;t find a portfolio for <span className="text-indigo-400 font-medium">@{username}</span>
+                </p>
+
+                <p className="text-slate-500 text-sm mb-8">
+                    {message}
+                </p>
+
+                <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                    <a
+                        href="/"
+                        className="px-6 py-3 bg-gradient-to-r from-indigo-600 to-pink-600 hover:from-indigo-500 hover:to-pink-500 text-white font-medium rounded-xl transition-all shadow-lg shadow-indigo-500/25"
+                    >
+                        Create Your Portfolio
+                    </a>
+                    <a
+                        href="/"
+                        className="px-6 py-3 bg-white/5 hover:bg-white/10 border border-white/10 text-white font-medium rounded-xl transition-all"
+                    >
+                        Go Home
+                    </a>
+                </div>
+            </div>
+
+            {/* Footer */}
+            <div className="absolute bottom-8 left-0 right-0 text-center">
+                <p className="text-slate-600 text-sm">
+                    Powered by{" "}
+                    <a href="/" className="text-indigo-400 hover:text-indigo-300">
+                        ConsoleCV
+                    </a>
+                </p>
+            </div>
+        </div>
+    );
+}
+
+// =============================================================================
+// MAIN PAGE COMPONENT
+// =============================================================================
+
+export default function PortfolioPage() {
     const params = useParams();
     const username = params.username as string;
 
+    // State
     const [resumeData, setResumeData] = useState<ResumeData | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-    const [isCopied, setIsCopied] = useState(false);
 
-    // Fetch public resume
+    // Fetch user's resume data
     useEffect(() => {
-        const fetchResume = async () => {
+        const fetchPortfolio = async () => {
             try {
                 const res = await fetch(`/api/public/${username}`);
+
                 if (!res.ok) {
-                    throw new Error("Resume not found");
+                    if (res.status === 404) {
+                        throw new Error("No public resume found for this username. Make sure you have a resume with your GitHub username set.");
+                    }
+                    throw new Error("Failed to load portfolio data.");
                 }
+
                 const data = await res.json();
+
+                if (!data.success || !data.data) {
+                    throw new Error("Invalid portfolio data received.");
+                }
+
                 setResumeData(data.data);
-            } catch {
-                setError("User not found or no public resume available.");
+            } catch (err) {
+                console.error("[Portfolio] Error:", err);
+                setError(err instanceof Error ? err.message : "An unexpected error occurred.");
             } finally {
                 setIsLoading(false);
             }
         };
 
         if (username) {
-            fetchResume();
+            fetchPortfolio();
         }
     }, [username]);
 
-    // Ref for print
-    const resumeRef = useRef<HTMLDivElement>(null);
+    // Update document title when data loads
+    useEffect(() => {
+        if (resumeData?.personal?.fullName) {
+            document.title = `${resumeData.personal.fullName} | Developer Portfolio - ConsoleCV`;
+        }
+    }, [resumeData?.personal?.fullName]);
 
-    // React-to-print hook
-    const handlePrint = useReactToPrint({
-        contentRef: resumeRef,
-        documentTitle: `${username}_Resume_ConsoleCV`,
-    });
-
-    const handleShare = () => {
-        navigator.clipboard.writeText(window.location.href);
-        setIsCopied(true);
-        setTimeout(() => setIsCopied(false), 2000);
-    };
-
+    // Loading state
     if (isLoading) {
-        return (
-            <div className="min-h-screen bg-slate-950 flex items-center justify-center">
-                <Loader2 className="w-8 h-8 text-emerald-500 animate-spin" />
-            </div>
-        );
+        return <PortfolioLoadingScreen />;
     }
 
+    // Error state
     if (error || !resumeData) {
-        return (
-            <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center text-center px-4">
-                <div className="p-4 bg-red-500/10 rounded-full mb-4">
-                    <AlertCircle className="w-8 h-8 text-red-500" />
-                </div>
-                <h1 className="text-2xl font-bold text-white mb-2">Resume Not Found</h1>
-                <p className="text-slate-400 mb-8">{error}</p>
-                <a
-                    href="/"
-                    className="px-6 py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-medium rounded-lg transition-colors"
-                >
-                    Create Your Own Resume
-                </a>
-            </div>
-        );
+        return <ErrorScreen message={error || "Unknown error"} username={username} />;
     }
 
-    return (
-        <div className="min-h-screen bg-slate-950 py-8 px-4">
-            {/* Header */}
-            <div className="max-w-4xl mx-auto mb-8 flex flex-col sm:flex-row items-center justify-between gap-4">
-                <div>
-                    <h1 className="text-2xl font-bold text-white mb-1">
-                        {resumeData.personal.fullName}&apos;s Resume
-                    </h1>
-                    <a
-                        href="/"
-                        className="text-sm text-emerald-500 hover:text-emerald-400 font-medium"
-                    >
-                        Built with ConsoleCV
-                    </a>
-                </div>
-                <div className="flex gap-3">
-                    <button
-                        onClick={handleShare}
-                        className="flex items-center gap-2 px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white font-medium rounded-lg transition-colors"
-                    >
-                        {isCopied ? (
-                            <Copy className="w-4 h-4 text-emerald-400" />
-                        ) : (
-                            <Share2 className="w-4 h-4" />
-                        )}
-                        {isCopied ? "Copied!" : "Share"}
-                    </button>
-                    <button
-                        onClick={() => handlePrint()}
-                        className="flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-medium rounded-lg transition-colors shadow-lg shadow-emerald-500/20"
-                    >
-                        <Download className="w-4 h-4" />
-                        PDF
-                    </button>
-                </div>
-            </div>
+    // Future: Support multiple themes based on user preference
+    // const ThemeComponent = getPortfolioTheme(resumeData.portfolioTemplateId);
+    // return <ThemeComponent data={resumeData} />;
 
-            {/* Resume Preview */}
-            <div className="max-w-[210mm] mx-auto bg-white shadow-2xl overflow-hidden rounded-sm">
-                <ResumePreview ref={resumeRef} data={resumeData} />
-            </div>
-        </div>
-    );
+    // For now, use SpaceTheme as default
+    return <SpaceTheme data={resumeData} />;
 }

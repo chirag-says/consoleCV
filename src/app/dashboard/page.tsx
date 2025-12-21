@@ -23,6 +23,7 @@ import {
     Search,
     Command,
     Pencil,
+    Rocket,
 } from "lucide-react";
 import type { ResumeData } from "@/types/resume";
 import { DashboardCard } from "@/components/dashboard";
@@ -350,7 +351,7 @@ export default function DashboardPage() {
                         <div className="h-px bg-white/10 flex-1" />
                     </div>
 
-                    <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
                         <DashboardCard
                             title="Create New Resume"
                             description="Start fresh with our guided CLI-style editor"
@@ -360,12 +361,19 @@ export default function DashboardPage() {
                             loading={isCreating}
                         />
                         <DashboardCard
+                            title="Build Portfolio"
+                            description="Upload your resume & generate a stunning portfolio"
+                            icon={Rocket}
+                            href="/portfolio/create"
+                            variant="gradient"
+                            badge="New"
+                        />
+                        <DashboardCard
                             title="ATS Scanner"
                             description="Optimize your resume for applicant tracking systems"
                             icon={Target}
                             href="/dashboard/ats"
-                            variant="gradient"
-                            badge="New"
+                            variant="default"
                         />
                         <DashboardCard
                             title="Import from GitHub"
