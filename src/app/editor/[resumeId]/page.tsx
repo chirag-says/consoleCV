@@ -16,6 +16,7 @@ import {
     ChevronUp,
     Loader2,
     ArrowLeft,
+    Target,
 } from "lucide-react";
 import type { ResumeData, TemplateId } from "@/types/resume";
 import { defaultResumeData } from "@/types/resume";
@@ -26,6 +27,7 @@ import {
     ProjectsForm,
     SkillsForm,
     TemplateSelector,
+    AtsAnalyzer,
 } from "@/components/editor";
 
 // Dynamically import PDF components to avoid SSR issues
@@ -104,6 +106,7 @@ export default function EditorPage() {
     const [isSaving, setIsSaving] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
     const [saveMessage, setSaveMessage] = useState<string | null>(null);
+    const [isAtsOpen, setIsAtsOpen] = useState(false);
 
     // Fetch resume data
     useEffect(() => {
@@ -232,6 +235,13 @@ export default function EditorPage() {
                                 </span>
                             )}
                             <button
+                                onClick={() => setIsAtsOpen(true)}
+                                className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-500 hover:to-purple-500 text-white font-medium rounded-lg transition-all shadow-lg shadow-violet-500/20"
+                            >
+                                <Target className="w-4 h-4" />
+                                ATS Check
+                            </button>
+                            <button
                                 onClick={handleSave}
                                 disabled={isSaving}
                                 className="flex items-center gap-2 px-4 py-2 bg-slate-800 hover:bg-slate-700 disabled:opacity-50 text-white font-medium rounded-lg transition-colors"
@@ -352,6 +362,13 @@ export default function EditorPage() {
                     </div>
                 </div>
             </main>
+
+            {/* ATS Analyzer Modal */}
+            <AtsAnalyzer
+                resumeData={resumeData}
+                isOpen={isAtsOpen}
+                onClose={() => setIsAtsOpen(false)}
+            />
         </div>
     );
 }

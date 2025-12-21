@@ -8,6 +8,7 @@ import type { ResumeData } from "@/types/resume";
 export interface IResume extends Omit<ResumeData, "_id" | "userId">, Document {
     userId: mongoose.Types.ObjectId;
     title: string;
+    templateId: "latex" | "modern";
     createdAt: Date;
     updatedAt: Date;
 }
@@ -70,6 +71,11 @@ const ResumeSchema = new Schema<IResume>(
         title: {
             type: String,
             default: "Untitled Resume",
+        },
+        templateId: {
+            type: String,
+            enum: ["latex", "modern"],
+            default: "latex",
         },
         personal: { type: PersonalSchema, default: () => ({}) },
         education: { type: [EducationSchema], default: [] },

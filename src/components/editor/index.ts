@@ -7,4 +7,5 @@ export { default as ExperienceForm } from "./ExperienceForm";
 export { default as ProjectsForm } from "./ProjectsForm";
 export { default as SkillsForm } from "./SkillsForm";
 export { default as TemplateSelector } from "./TemplateSelector";
+export { default as AtsAnalyzer } from "./AtsAnalyzer";
 
