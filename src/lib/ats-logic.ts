@@ -273,15 +273,13 @@ export function flattenResumeData(resumeData: ResumeData): string {
 // =============================================================================
 
 /**
- * Calculate ATS match score between resume and job description
+ * Calculate ATS match score from raw resume text and job description
+ * This is the universal function that works with any text input
  */
-export function calculateMatch(
-    resumeData: ResumeData,
+export function calculateMatchFromText(
+    resumeText: string,
     jobDescription: string
 ): ATSAnalysisResult {
-    // Flatten resume to single string
-    const resumeText = flattenResumeData(resumeData);
-
     // Extract keywords from both
     const resumeKeywords = extractKeywords(resumeText);
     const jobKeywordsWithWeights = extractKeywordsWithWeights(jobDescription);
@@ -322,12 +320,11 @@ export function calculateMatch(
         ? Math.round((matchedWeight / totalWeight) * 100)
         : 0;
 
-    // Generate suggestions
-    const suggestions = generateSuggestions(
+    // Generate suggestions (for external resumes, we pass null for resumeData)
+    const suggestions = generateSuggestionsFromText(
         score,
         missingKeywords,
-        matchedKeywords,
-        resumeData
+        resumeText
     );
 
     return {
@@ -340,9 +337,88 @@ export function calculateMatch(
     };
 }
 
+/**
+ * Calculate ATS match score between ResumeData and job description
+ * This is a convenience wrapper for our internal resume format
+ */
+export function calculateMatch(
+    resumeData: ResumeData,
+    jobDescription: string
+): ATSAnalysisResult {
+    // Flatten resume to single string
+    const resumeText = flattenResumeData(resumeData);
+
+    // Use the universal text-based function
+    const result = calculateMatchFromText(resumeText, jobDescription);
+
+    // Override suggestions with ResumeData-aware suggestions
+    result.suggestions = generateSuggestions(
+        result.score,
+        result.missingKeywords,
+        result.matchedKeywords,
+        resumeData
+    );
+
+    return result;
+}
+
 // =============================================================================
 // SUGGESTIONS GENERATOR
 // =============================================================================
+
+/**
+ * Generate suggestions from raw text (for external PDFs)
+ */
+function generateSuggestionsFromText(
+    score: number,
+    missingKeywords: string[],
+    resumeText: string
+): string[] {
+    const suggestions: string[] = [];
+
+    // Score-based suggestions
+    if (score < 40) {
+        suggestions.push(
+            "This resume has low keyword alignment with the job description. Consider tailoring it more closely."
+        );
+    } else if (score < 70) {
+        suggestions.push(
+            "Good foundation! The resume covers many requirements but could include more relevant keywords."
+        );
+    } else {
+        suggestions.push(
+            "Excellent match! This resume aligns well with the job description."
+        );
+    }
+
+    // Missing technical skills
+    const missingTechKeywords = missingKeywords.filter((word) =>
+        TECH_KEYWORDS.has(word)
+    );
+    if (missingTechKeywords.length > 0) {
+        const topMissing = missingTechKeywords.slice(0, 5).join(", ");
+        suggestions.push(
+            `Consider adding these technical skills if applicable: ${topMissing}`
+        );
+    }
+
+    // Check resume length
+    const wordCount = resumeText.split(/\s+/).length;
+    if (wordCount < 200) {
+        suggestions.push(
+            "The resume appears quite short. More detailed descriptions could improve keyword matching."
+        );
+    }
+
+    // General tip for external resumes
+    if (score < 60) {
+        suggestions.push(
+            "Tip: Use action verbs and quantify achievements to make your resume more impactful."
+        );
+    }
+
+    return suggestions.slice(0, 4);
+}
 
 /**
  * Generate actionable suggestions based on analysis

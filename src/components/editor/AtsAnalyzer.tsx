@@ -2,9 +2,10 @@
 
 // ConsoleCV - ATS Analyzer Component
 // Compares resume against job descriptions and provides match scoring
+// Supports both current project analysis and external PDF upload
 // 100% client-side analysis with visual feedback
 
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useRef } from "react";
 import {
     X,
     Search,
@@ -15,14 +16,24 @@ import {
     Loader2,
     FileText,
     Sparkles,
+    Upload,
+    File,
+    Trash2,
 } from "lucide-react";
 import type { ResumeData } from "@/types/resume";
 import {
     calculateMatch,
+    calculateMatchFromText,
     getScoreColor,
     getScoreLabel,
+    flattenResumeData,
     type ATSAnalysisResult,
 } from "@/lib/ats-logic";
+import {
+    extractTextFromPdf,
+    formatFileSize,
+    isValidPdfFile,
+} from "@/lib/pdf-parser";
 
 // =============================================================================
 // TYPES
@@ -34,6 +45,14 @@ interface AtsAnalyzerProps {
     onClose: () => void;
 }
 
+type AnalysisMode = "current" | "upload";
+
+interface UploadedFile {
+    file: File;
+    text: string;
+    pageCount: number;
+}
+
 // =============================================================================
 // SCORE GAUGE COMPONENT
 // =============================================================================
@@ -43,9 +62,9 @@ interface ScoreGaugeProps {
     size?: number;
 }
 
-function ScoreGauge({ score, size = 160 }: ScoreGaugeProps) {
+function ScoreGauge({ score, size = 140 }: ScoreGaugeProps) {
     const colors = getScoreColor(score);
-    const strokeWidth = 12;
+    const strokeWidth = 10;
     const radius = (size - strokeWidth) / 2;
     const circumference = 2 * Math.PI * radius;
     const progress = (score / 100) * circumference;
@@ -99,10 +118,10 @@ function ScoreGauge({ score, size = 160 }: ScoreGaugeProps) {
             </svg>
             {/* Score text in center */}
             <div className="absolute inset-0 flex flex-col items-center justify-center">
-                <span className={`text-4xl font-bold ${colors.text}`}>
+                <span className={`text-3xl font-bold ${colors.text}`}>
                     {score}
                 </span>
-                <span className="text-xs text-slate-400 mt-1">out of 100</span>
+                <span className="text-xs text-slate-400">/ 100</span>
             </div>
         </div>
     );
@@ -118,7 +137,7 @@ interface KeywordBadgeProps {
 }
 
 function KeywordBadge({ keyword, variant }: KeywordBadgeProps) {
-    const baseClasses = "inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium transition-all";
+    const baseClasses = "inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium";
 
     if (variant === "matched") {
         return (
@@ -138,29 +157,209 @@ function KeywordBadge({ keyword, variant }: KeywordBadgeProps) {
 }
 
 // =============================================================================
+// FILE DROP ZONE COMPONENT
+// =============================================================================
+
+interface FileDropZoneProps {
+    onFileSelect: (file: File) => void;
+    isLoading: boolean;
+    uploadedFile: UploadedFile | null;
+    onRemoveFile: () => void;
+    error: string | null;
+}
+
+function FileDropZone({ onFileSelect, isLoading, uploadedFile, onRemoveFile, error }: FileDropZoneProps) {
+    const [isDragging, setIsDragging] = useState(false);
+    const fileInputRef = useRef<HTMLInputElement>(null);
+
+    const handleDragOver = useCallback((e: React.DragEvent) => {
+        e.preventDefault();
+        setIsDragging(true);
+    }, []);
+
+    const handleDragLeave = useCallback((e: React.DragEvent) => {
+        e.preventDefault();
+        setIsDragging(false);
+    }, []);
+
+    const handleDrop = useCallback((e: React.DragEvent) => {
+        e.preventDefault();
+        setIsDragging(false);
+
+        const files = e.dataTransfer.files;
+        if (files.length > 0 && isValidPdfFile(files[0])) {
+            onFileSelect(files[0]);
+        }
+    }, [onFileSelect]);
+
+    const handleFileInput = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+        const files = e.target.files;
+        if (files && files.length > 0) {
+            onFileSelect(files[0]);
+        }
+    }, [onFileSelect]);
+
+    if (uploadedFile) {
+        return (
+            <div className="p-4 bg-slate-800 border border-slate-600 rounded-xl">
+                <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-lg bg-violet-500/20 flex items-center justify-center">
+                            <File className="w-5 h-5 text-violet-400" />
+                        </div>
+                        <div>
+                            <p className="text-sm font-medium text-white truncate max-w-[200px]">
+                                {uploadedFile.file.name}
+                            </p>
+                            <p className="text-xs text-slate-400">
+                                {formatFileSize(uploadedFile.file.size)} • {uploadedFile.pageCount} page{uploadedFile.pageCount !== 1 ? "s" : ""}
+                            </p>
+                        </div>
+                    </div>
+                    <button
+                        onClick={onRemoveFile}
+                        className="p-2 text-slate-400 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors"
+                    >
+                        <Trash2 className="w-4 h-4" />
+                    </button>
+                </div>
+                <div className="mt-3 flex items-center gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                    <span className="text-xs text-emerald-400">
+                        {uploadedFile.text.split(/\s+/).length} words extracted
+                    </span>
+                </div>
+            </div>
+        );
+    }
+
+    return (
+        <div>
+            <div
+                onDragOver={handleDragOver}
+                onDragLeave={handleDragLeave}
+                onDrop={handleDrop}
+                onClick={() => fileInputRef.current?.click()}
+                className={`
+                    relative p-6 border-2 border-dashed rounded-xl cursor-pointer transition-all
+                    ${isDragging
+                        ? "border-violet-500 bg-violet-500/10"
+                        : "border-slate-600 hover:border-slate-500 bg-slate-800/50"
+                    }
+                    ${error ? "border-red-500/50" : ""}
+                `}
+            >
+                <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept=".pdf,application/pdf"
+                    onChange={handleFileInput}
+                    className="hidden"
+                />
+
+                {isLoading ? (
+                    <div className="flex flex-col items-center">
+                        <Loader2 className="w-8 h-8 text-violet-400 animate-spin mb-2" />
+                        <p className="text-sm text-slate-300">Extracting text...</p>
+                    </div>
+                ) : (
+                    <div className="flex flex-col items-center">
+                        <Upload className="w-8 h-8 text-slate-400 mb-2" />
+                        <p className="text-sm text-slate-300 mb-1">
+                            Drop your PDF here or <span className="text-violet-400">browse</span>
+                        </p>
+                        <p className="text-xs text-slate-500">
+                            Max 10MB • Text-based PDFs only
+                        </p>
+                    </div>
+                )}
+            </div>
+
+            {error && (
+                <div className="mt-2 p-2 bg-red-500/10 border border-red-500/20 rounded-lg">
+                    <p className="text-xs text-red-400 flex items-center gap-2">
+                        <AlertTriangle className="w-3 h-3" />
+                        {error}
+                    </p>
+                </div>
+            )}
+        </div>
+    );
+}
+
+// =============================================================================
 // MAIN COMPONENT
 // =============================================================================
 
 export function AtsAnalyzer({ resumeData, isOpen, onClose }: AtsAnalyzerProps) {
+    const [mode, setMode] = useState<AnalysisMode>("current");
     const [jobDescription, setJobDescription] = useState("");
     const [isAnalyzing, setIsAnalyzing] = useState(false);
     const [result, setResult] = useState<ATSAnalysisResult | null>(null);
+
+    // Upload mode state
+    const [uploadedFile, setUploadedFile] = useState<UploadedFile | null>(null);
+    const [isExtracting, setIsExtracting] = useState(false);
+    const [uploadError, setUploadError] = useState<string | null>(null);
+
+    const handleFileSelect = useCallback(async (file: File) => {
+        setUploadError(null);
+        setIsExtracting(true);
+        setResult(null);
+
+        const extractionResult = await extractTextFromPdf(file);
+
+        if (extractionResult.success) {
+            setUploadedFile({
+                file,
+                text: extractionResult.text,
+                pageCount: extractionResult.pageCount,
+            });
+        } else {
+            setUploadError(extractionResult.error || "Failed to extract text");
+        }
+
+        setIsExtracting(false);
+    }, []);
+
+    const handleRemoveFile = useCallback(() => {
+        setUploadedFile(null);
+        setUploadError(null);
+        setResult(null);
+    }, []);
 
     const handleAnalyze = useCallback(() => {
         if (!jobDescription.trim()) return;
 
         setIsAnalyzing(true);
 
-        // Simulate slight delay for better UX
         setTimeout(() => {
-            const analysisResult = calculateMatch(resumeData, jobDescription);
+            let analysisResult: ATSAnalysisResult;
+
+            if (mode === "current") {
+                // Use the structured resume data
+                analysisResult = calculateMatch(resumeData, jobDescription);
+            } else {
+                // Use the extracted PDF text
+                if (!uploadedFile) {
+                    setIsAnalyzing(false);
+                    return;
+                }
+                analysisResult = calculateMatchFromText(uploadedFile.text, jobDescription);
+            }
+
             setResult(analysisResult);
             setIsAnalyzing(false);
         }, 500);
-    }, [jobDescription, resumeData]);
+    }, [jobDescription, resumeData, mode, uploadedFile]);
 
     const handleClear = useCallback(() => {
         setJobDescription("");
+        setResult(null);
+    }, []);
+
+    const handleModeChange = useCallback((newMode: AnalysisMode) => {
+        setMode(newMode);
         setResult(null);
     }, []);
 
@@ -168,6 +367,12 @@ export function AtsAnalyzer({ resumeData, isOpen, onClose }: AtsAnalyzerProps) {
 
     const colors = result ? getScoreColor(result.score) : null;
     const label = result ? getScoreLabel(result.score) : null;
+    const canAnalyze = jobDescription.trim() && (mode === "current" || uploadedFile);
+
+    // Get resume preview text for current mode
+    const currentResumePreview = mode === "current"
+        ? flattenResumeData(resumeData).slice(0, 150) + "..."
+        : null;
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
@@ -178,7 +383,7 @@ export function AtsAnalyzer({ resumeData, isOpen, onClose }: AtsAnalyzerProps) {
             />
 
             {/* Modal */}
-            <div className="relative w-full max-w-3xl max-h-[90vh] bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl overflow-hidden flex flex-col mx-4">
+            <div className="relative w-full max-w-4xl max-h-[90vh] bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl overflow-hidden flex flex-col mx-4">
                 {/* Header */}
                 <div className="flex items-center justify-between px-6 py-4 border-b border-slate-700 bg-gradient-to-r from-slate-800 to-slate-900">
                     <div className="flex items-center gap-3">
@@ -187,7 +392,7 @@ export function AtsAnalyzer({ resumeData, isOpen, onClose }: AtsAnalyzerProps) {
                         </div>
                         <div>
                             <h2 className="text-lg font-semibold text-white">ATS Keyword Analyzer</h2>
-                            <p className="text-xs text-slate-400">Compare your resume against job descriptions</p>
+                            <p className="text-xs text-slate-400">Compare resume against job descriptions</p>
                         </div>
                     </div>
                     <button
@@ -198,28 +403,79 @@ export function AtsAnalyzer({ resumeData, isOpen, onClose }: AtsAnalyzerProps) {
                     </button>
                 </div>
 
+                {/* Mode Tabs */}
+                <div className="px-6 pt-4">
+                    <div className="flex gap-2 p-1 bg-slate-800 rounded-lg">
+                        <button
+                            onClick={() => handleModeChange("current")}
+                            className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-md text-sm font-medium transition-all ${mode === "current"
+                                    ? "bg-violet-600 text-white shadow-lg"
+                                    : "text-slate-400 hover:text-white"
+                                }`}
+                        >
+                            <FileText className="w-4 h-4" />
+                            Check Current Project
+                        </button>
+                        <button
+                            onClick={() => handleModeChange("upload")}
+                            className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-md text-sm font-medium transition-all ${mode === "upload"
+                                    ? "bg-violet-600 text-white shadow-lg"
+                                    : "text-slate-400 hover:text-white"
+                                }`}
+                        >
+                            <Upload className="w-4 h-4" />
+                            Upload External Resume
+                        </button>
+                    </div>
+                </div>
+
                 {/* Content */}
                 <div className="flex-1 overflow-y-auto p-6">
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                         {/* Left Column - Input */}
                         <div className="space-y-4">
+                            {/* Resume Source */}
+                            {mode === "current" ? (
+                                <div className="p-3 bg-slate-800/50 border border-slate-700 rounded-xl">
+                                    <p className="text-xs text-slate-400 mb-1">Analyzing your current project:</p>
+                                    <p className="text-sm text-slate-300 font-medium">
+                                        {resumeData.personal?.fullName || "Untitled Resume"}
+                                    </p>
+                                    {currentResumePreview && (
+                                        <p className="text-xs text-slate-500 mt-1 line-clamp-2">
+                                            {currentResumePreview}
+                                        </p>
+                                    )}
+                                </div>
+                            ) : (
+                                <FileDropZone
+                                    onFileSelect={handleFileSelect}
+                                    isLoading={isExtracting}
+                                    uploadedFile={uploadedFile}
+                                    onRemoveFile={handleRemoveFile}
+                                    error={uploadError}
+                                />
+                            )}
+
+                            {/* Job Description Input */}
                             <div>
                                 <label className="block text-sm font-medium text-slate-300 mb-2">
                                     <FileText className="w-4 h-4 inline mr-2" />
-                                    Paste Job Description
+                                    Job Description
                                 </label>
                                 <textarea
                                     value={jobDescription}
                                     onChange={(e) => setJobDescription(e.target.value)}
-                                    placeholder="Paste the full job description here. Include requirements, qualifications, and responsibilities for best results..."
-                                    className="w-full h-64 px-4 py-3 bg-slate-800 border border-slate-600 rounded-xl text-slate-200 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent resize-none text-sm"
+                                    placeholder="Paste the job description here..."
+                                    className="w-full h-40 px-4 py-3 bg-slate-800 border border-slate-600 rounded-xl text-slate-200 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent resize-none text-sm"
                                 />
                             </div>
 
+                            {/* Action Buttons */}
                             <div className="flex gap-3">
                                 <button
                                     onClick={handleAnalyze}
-                                    disabled={!jobDescription.trim() || isAnalyzing}
+                                    disabled={!canAnalyze || isAnalyzing}
                                     className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-500 hover:to-purple-500 disabled:opacity-50 disabled:cursor-not-allowed text-white font-medium rounded-xl transition-all shadow-lg shadow-violet-500/20"
                                 >
                                     {isAnalyzing ? (
@@ -244,7 +500,7 @@ export function AtsAnalyzer({ resumeData, isOpen, onClose }: AtsAnalyzerProps) {
                                 )}
                             </div>
 
-                            {/* Tips when no result */}
+                            {/* Tips */}
                             {!result && (
                                 <div className="p-4 bg-slate-800/50 border border-slate-700 rounded-xl">
                                     <div className="flex items-start gap-3">
@@ -252,9 +508,19 @@ export function AtsAnalyzer({ resumeData, isOpen, onClose }: AtsAnalyzerProps) {
                                         <div className="text-sm">
                                             <p className="text-slate-300 font-medium mb-2">Tips for best results:</p>
                                             <ul className="text-slate-400 space-y-1 text-xs">
-                                                <li>• Include the full job description, not just the title</li>
-                                                <li>• Make sure your resume has a complete Skills section</li>
-                                                <li>• Use specific technical terms in your experience</li>
+                                                {mode === "current" ? (
+                                                    <>
+                                                        <li>• Make sure your Skills section is complete</li>
+                                                        <li>• Use specific technical terms in experience</li>
+                                                        <li>• Include the full job description</li>
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <li>• Upload a text-based PDF (not scanned)</li>
+                                                        <li>• Ensure the PDF isn&apos;t password protected</li>
+                                                        <li>• Modern ATS-friendly formats work best</li>
+                                                    </>
+                                                )}
                                             </ul>
                                         </div>
                                     </div>
@@ -267,9 +533,9 @@ export function AtsAnalyzer({ resumeData, isOpen, onClose }: AtsAnalyzerProps) {
                             {result ? (
                                 <>
                                     {/* Score Display */}
-                                    <div className="flex flex-col items-center p-6 bg-gradient-to-br from-slate-800 to-slate-900 border border-slate-700 rounded-xl">
+                                    <div className="flex flex-col items-center p-5 bg-gradient-to-br from-slate-800 to-slate-900 border border-slate-700 rounded-xl">
                                         <ScoreGauge score={result.score} />
-                                        <p className={`mt-4 text-lg font-semibold ${colors?.text}`}>
+                                        <p className={`mt-3 text-lg font-semibold ${colors?.text}`}>
                                             {label}
                                         </p>
                                         <p className="text-xs text-slate-400 mt-1">
@@ -282,19 +548,19 @@ export function AtsAnalyzer({ resumeData, isOpen, onClose }: AtsAnalyzerProps) {
                                         <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-xl">
                                             <h3 className="text-sm font-medium text-red-300 mb-3 flex items-center gap-2">
                                                 <AlertTriangle className="w-4 h-4" />
-                                                Critical Missing Keywords ({result.missingKeywords.length})
+                                                Missing Keywords ({result.missingKeywords.length})
                                             </h3>
-                                            <div className="flex flex-wrap gap-2">
-                                                {result.missingKeywords.slice(0, 12).map((keyword) => (
+                                            <div className="flex flex-wrap gap-1.5">
+                                                {result.missingKeywords.slice(0, 10).map((keyword) => (
                                                     <KeywordBadge
                                                         key={keyword}
                                                         keyword={keyword}
                                                         variant="missing"
                                                     />
                                                 ))}
-                                                {result.missingKeywords.length > 12 && (
-                                                    <span className="text-xs text-slate-400 self-center">
-                                                        +{result.missingKeywords.length - 12} more
+                                                {result.missingKeywords.length > 10 && (
+                                                    <span className="text-xs text-slate-400 self-center ml-1">
+                                                        +{result.missingKeywords.length - 10} more
                                                     </span>
                                                 )}
                                             </div>
@@ -306,19 +572,19 @@ export function AtsAnalyzer({ resumeData, isOpen, onClose }: AtsAnalyzerProps) {
                                         <div className="p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-xl">
                                             <h3 className="text-sm font-medium text-emerald-300 mb-3 flex items-center gap-2">
                                                 <CheckCircle2 className="w-4 h-4" />
-                                                Matched Keywords ({result.matchedKeywords.length})
+                                                Matched ({result.matchedKeywords.length})
                                             </h3>
-                                            <div className="flex flex-wrap gap-2">
-                                                {result.matchedKeywords.slice(0, 12).map((keyword) => (
+                                            <div className="flex flex-wrap gap-1.5">
+                                                {result.matchedKeywords.slice(0, 10).map((keyword) => (
                                                     <KeywordBadge
                                                         key={keyword}
                                                         keyword={keyword}
                                                         variant="matched"
                                                     />
                                                 ))}
-                                                {result.matchedKeywords.length > 12 && (
-                                                    <span className="text-xs text-slate-400 self-center">
-                                                        +{result.matchedKeywords.length - 12} more
+                                                {result.matchedKeywords.length > 10 && (
+                                                    <span className="text-xs text-slate-400 self-center ml-1">
+                                                        +{result.matchedKeywords.length - 10} more
                                                     </span>
                                                 )}
                                             </div>
@@ -355,7 +621,10 @@ export function AtsAnalyzer({ resumeData, isOpen, onClose }: AtsAnalyzerProps) {
                                         No Analysis Yet
                                     </h3>
                                     <p className="text-sm text-slate-500 max-w-xs">
-                                        Paste a job description and click &quot;Analyze Match&quot; to see how well your resume aligns.
+                                        {mode === "current"
+                                            ? "Paste a job description and click \"Analyze Match\" to compare with your current project."
+                                            : "Upload a PDF resume and paste a job description to analyze the match."
+                                        }
                                     </p>
                                 </div>
                             )}
@@ -366,7 +635,7 @@ export function AtsAnalyzer({ resumeData, isOpen, onClose }: AtsAnalyzerProps) {
                 {/* Footer */}
                 <div className="px-6 py-3 border-t border-slate-700 bg-slate-800/50">
                     <p className="text-xs text-slate-500 text-center">
-                        💡 This analysis runs entirely in your browser. No data is sent to any server.
+                        💡 100% client-side analysis. Your data never leaves your browser.
                     </p>
                 </div>
             </div>

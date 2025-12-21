@@ -59,8 +59,8 @@ const nextConfig = {
                         value: [
                             // Default: only allow from same origin
                             "default-src 'self'",
-                            // Scripts: self, vercel, and inline (needed for Next.js)
-                            "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://vercel.live https://*.vercel-scripts.com",
+                            // Scripts: self, vercel, cdnjs (for PDF.js), and inline (needed for Next.js)
+                            "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://vercel.live https://*.vercel-scripts.com https://cdnjs.cloudflare.com",
                             // Styles: self and inline (needed for styled-components, etc.)
                             "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
                             // Images: allow data URIs and common CDNs
