@@ -3,14 +3,13 @@
 // ConsoleCV - Minimal Theme
 // Clean, elegant, print-friendly design
 // Focuses on typography, whitespace, and readability
+// Mobile-optimized with responsive layout and stacking
 
 import React from "react";
-import { motion } from "framer-motion";
 import {
     Github,
     Linkedin,
     Mail,
-    Globe,
     MapPin,
     ExternalLink,
 } from "lucide-react";
@@ -29,77 +28,79 @@ export default function MinimalTheme({ data }: MinimalThemeProps) {
 
     return (
         <div className="min-h-screen bg-white text-gray-900 font-sans selection:bg-gray-200">
-            <div className="max-w-4xl mx-auto bg-white min-h-screen shadow-sm sm:my-8 px-8 py-12 sm:p-16">
+            <div className="max-w-4xl mx-auto bg-white min-h-screen shadow-sm sm:my-4 md:my-8 px-4 py-8 sm:px-8 sm:py-12 md:p-16">
 
                 {/* Header */}
-                <header className="border-b-2 border-gray-900 pb-8 mb-12">
-                    <div className="flex flex-col sm:flex-row justify-between items-start gap-6">
-                        <div>
-                            <h1 className="text-4xl sm:text-5xl font-bold tracking-tight text-gray-900 mb-2">
+                <header className="border-b-2 border-gray-900 pb-6 md:pb-8 mb-8 md:mb-12">
+                    <div className="flex flex-col gap-6">
+                        {/* Name and Title */}
+                        <div className="text-center sm:text-left">
+                            <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight text-gray-900 mb-2 break-words">
                                 {personal.fullName}
                             </h1>
-                            <p className="text-xl text-gray-600 font-medium tracking-wide">
+                            <p className="text-lg md:text-xl text-gray-600 font-medium tracking-wide">
                                 {data.title || "Software Engineer"}
                             </p>
                             {personal.summary && (
-                                <p className="mt-4 text-gray-600 max-w-xl leading-relaxed">
+                                <p className="mt-3 md:mt-4 text-gray-600 max-w-xl leading-relaxed text-sm md:text-base break-words mx-auto sm:mx-0">
                                     {personal.summary}
                                 </p>
                             )}
                         </div>
 
-                        <div className="flex flex-col gap-2 text-sm text-gray-600 sm:text-right shrink-0">
+                        {/* Contact Info */}
+                        <div className="flex flex-col sm:flex-row sm:flex-wrap gap-2 sm:gap-4 text-xs md:text-sm text-gray-600 items-center sm:items-start justify-center sm:justify-start">
                             {personal.email && (
-                                <a href={`mailto:${personal.email}`} className="hover:text-black transition-colors flex items-center gap-2 sm:flex-row-reverse">
-                                    <Mail className="w-4 h-4" />
-                                    {personal.email}
+                                <a href={`mailto:${personal.email}`} className="hover:text-black transition-colors flex items-center gap-2">
+                                    <Mail className="w-3.5 h-3.5 md:w-4 md:h-4" />
+                                    <span className="break-all">{personal.email}</span>
                                 </a>
                             )}
                             {personal.github && (
-                                <a href={`https://github.com/${personal.github.replace(/^github\.com\//, "")}`} target="_blank" className="hover:text-black transition-colors flex items-center gap-2 sm:flex-row-reverse">
-                                    <Github className="w-4 h-4" />
-                                    github.com/{personal.github.replace(/^github\.com\//, "")}
+                                <a href={`https://github.com/${personal.github.replace(/^github\.com\//, "")}`} target="_blank" className="hover:text-black transition-colors flex items-center gap-2">
+                                    <Github className="w-3.5 h-3.5 md:w-4 md:h-4" />
+                                    <span>github.com/{personal.github.replace(/^github\.com\//, "")}</span>
                                 </a>
                             )}
                             {personal.linkedin && (
-                                <a href={personal.linkedin} target="_blank" className="hover:text-black transition-colors flex items-center gap-2 sm:flex-row-reverse">
-                                    <Linkedin className="w-4 h-4" />
-                                    LinkedIn
+                                <a href={personal.linkedin} target="_blank" className="hover:text-black transition-colors flex items-center gap-2">
+                                    <Linkedin className="w-3.5 h-3.5 md:w-4 md:h-4" />
+                                    <span>LinkedIn</span>
                                 </a>
                             )}
-                            <div className="flex items-center gap-2 sm:flex-row-reverse">
-                                <MapPin className="w-4 h-4" />
-                                Remote
+                            <div className="flex items-center gap-2">
+                                <MapPin className="w-3.5 h-3.5 md:w-4 md:h-4" />
+                                <span>Remote</span>
                             </div>
                         </div>
                     </div>
                 </header>
 
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 md:gap-12">
                     {/* Left Column (Main Content) */}
-                    <main className="lg:col-span-8 space-y-12">
+                    <main className="lg:col-span-8 space-y-8 md:space-y-12 order-2 lg:order-1">
 
                         {/* Experience */}
                         {experience.length > 0 && (
                             <section>
-                                <h2 className="text-2xl font-bold text-gray-900 mb-6 uppercase tracking-wider text-sm border-b border-gray-200 pb-2">
+                                <h2 className="text-xs md:text-sm font-bold text-gray-900 mb-4 md:mb-6 uppercase tracking-wider border-b border-gray-200 pb-2">
                                     Experience
                                 </h2>
-                                <div className="space-y-8">
+                                <div className="space-y-6 md:space-y-8">
                                     {experience.map((exp, index) => (
                                         <div key={index} className="group">
-                                            <div className="flex justify-between items-baseline mb-1">
-                                                <h3 className="text-lg font-bold text-gray-900 group-hover:text-indigo-600 transition-colors">
+                                            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-baseline gap-1 mb-1">
+                                                <h3 className="text-base md:text-lg font-bold text-gray-900 group-hover:text-indigo-600 transition-colors break-words">
                                                     {exp.company}
                                                 </h3>
-                                                <span className="text-sm text-gray-500 font-medium">
+                                                <span className="text-xs md:text-sm text-gray-500 font-medium whitespace-nowrap">
                                                     {exp.start} — {exp.end}
                                                 </span>
                                             </div>
-                                            <div className="text-indigo-600 font-medium mb-3">
+                                            <div className="text-indigo-600 font-medium mb-2 md:mb-3 text-sm md:text-base">
                                                 {exp.role}
                                             </div>
-                                            <p className="text-gray-600 leading-relaxed whitespace-pre-wrap">
+                                            <p className="text-gray-600 leading-relaxed whitespace-pre-wrap text-sm md:text-base break-words overflow-wrap-anywhere">
                                                 {exp.description}
                                             </p>
                                         </div>
@@ -111,29 +112,29 @@ export default function MinimalTheme({ data }: MinimalThemeProps) {
                         {/* Projects */}
                         {projects.length > 0 && (
                             <section>
-                                <h2 className="text-2xl font-bold text-gray-900 mb-6 uppercase tracking-wider text-sm border-b border-gray-200 pb-2">
+                                <h2 className="text-xs md:text-sm font-bold text-gray-900 mb-4 md:mb-6 uppercase tracking-wider border-b border-gray-200 pb-2">
                                     Projects
                                 </h2>
-                                <div className="space-y-6">
+                                <div className="space-y-4 md:space-y-6">
                                     {projects.map((project, index) => (
                                         <div key={index} className="group">
                                             <div className="flex items-center gap-2 mb-1">
-                                                <h3 className="text-lg font-bold text-gray-900 group-hover:text-indigo-600 transition-colors">
+                                                <h3 className="text-base md:text-lg font-bold text-gray-900 group-hover:text-indigo-600 transition-colors break-words">
                                                     {project.title}
                                                 </h3>
                                                 {project.link && (
-                                                    <a href={project.link} target="_blank" className="text-gray-400 hover:text-indigo-600">
-                                                        <ExternalLink className="w-4 h-4" />
+                                                    <a href={project.link} target="_blank" className="text-gray-400 hover:text-indigo-600 shrink-0">
+                                                        <ExternalLink className="w-3.5 h-3.5 md:w-4 md:h-4" />
                                                     </a>
                                                 )}
                                             </div>
-                                            <p className="text-gray-600 mb-2 leading-relaxed">
+                                            <p className="text-gray-600 mb-2 leading-relaxed text-sm md:text-base break-words overflow-wrap-anywhere">
                                                 {project.description}
                                             </p>
-                                            <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-gray-500 font-medium">
+                                            <div className="flex flex-wrap gap-x-3 md:gap-x-4 gap-y-1 text-xs md:text-sm text-gray-500 font-medium">
                                                 {project.techStack.map((tech, i) => (
                                                     <span key={i} className="flex items-center gap-1">
-                                                        <span className="w-1.5 h-1.5 rounded-full bg-indigo-600/60" />
+                                                        <span className="w-1 h-1 md:w-1.5 md:h-1.5 rounded-full bg-indigo-600/60" />
                                                         {tech}
                                                     </span>
                                                 ))}
@@ -145,20 +146,20 @@ export default function MinimalTheme({ data }: MinimalThemeProps) {
                         )}
                     </main>
 
-                    {/* Right Column (Sidebar) */}
-                    <aside className="lg:col-span-4 space-y-12">
+                    {/* Right Column (Sidebar) - Shows first on mobile */}
+                    <aside className="lg:col-span-4 space-y-8 md:space-y-12 order-1 lg:order-2">
 
                         {/* Skills */}
                         {skills.length > 0 && (
                             <section>
-                                <h2 className="text-lg font-bold text-gray-900 mb-4 uppercase tracking-wider text-sm border-b border-gray-200 pb-2">
+                                <h2 className="text-xs md:text-sm font-bold text-gray-900 mb-3 md:mb-4 uppercase tracking-wider border-b border-gray-200 pb-2">
                                     Skills
                                 </h2>
-                                <div className="flex flex-wrap gap-2">
+                                <div className="flex flex-wrap gap-1.5 md:gap-2">
                                     {skills.map((skill, index) => (
                                         <span
                                             key={index}
-                                            className="px-3 py-1 bg-gray-100 text-gray-700 text-sm font-medium rounded-md hover:bg-gray-200 transition-colors"
+                                            className="px-2.5 py-1 md:px-3 bg-gray-100 text-gray-700 text-xs md:text-sm font-medium rounded-md hover:bg-gray-200 transition-colors"
                                         >
                                             {skill}
                                         </span>
@@ -170,19 +171,19 @@ export default function MinimalTheme({ data }: MinimalThemeProps) {
                         {/* Education */}
                         {education.length > 0 && (
                             <section>
-                                <h2 className="text-lg font-bold text-gray-900 mb-4 uppercase tracking-wider text-sm border-b border-gray-200 pb-2">
+                                <h2 className="text-xs md:text-sm font-bold text-gray-900 mb-3 md:mb-4 uppercase tracking-wider border-b border-gray-200 pb-2">
                                     Education
                                 </h2>
-                                <div className="space-y-6">
+                                <div className="space-y-4 md:space-y-6">
                                     {education.map((edu, index) => (
                                         <div key={index}>
-                                            <h3 className="font-bold text-gray-900">
+                                            <h3 className="font-bold text-gray-900 text-sm md:text-base break-words">
                                                 {edu.school}
                                             </h3>
-                                            <div className="text-gray-600 text-sm mb-1">
+                                            <div className="text-gray-600 text-xs md:text-sm mb-1 break-words">
                                                 {edu.degree}
                                             </div>
-                                            <div className="text-gray-500 text-xs font-medium">
+                                            <div className="text-gray-500 text-[10px] md:text-xs font-medium">
                                                 {edu.start} — {edu.end}
                                             </div>
                                         </div>
@@ -194,7 +195,7 @@ export default function MinimalTheme({ data }: MinimalThemeProps) {
                     </aside>
                 </div>
 
-                <footer className="mt-20 pt-8 border-t border-gray-100 text-center text-gray-400 text-sm">
+                <footer className="mt-12 md:mt-20 pt-6 md:pt-8 border-t border-gray-100 text-center text-gray-400 text-xs md:text-sm">
                     &copy; {new Date().getFullYear()} {personal.fullName}
                 </footer>
             </div>

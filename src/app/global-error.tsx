@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect } from "react";
-import Link from "next/link";
 
 export default function GlobalError({
     error,
@@ -23,10 +22,10 @@ export default function GlobalError({
                         The application encountered a critical error and cannot continue.
                     </p>
                     <button
-                        onClick={() => window.location.reload()}
+                        onClick={reset}
                         className="px-6 py-3 bg-white text-black font-bold rounded-lg hover:bg-gray-200 transition-colors"
                     >
-                        Reload Application
+                        Try Again
                     </button>
                     <div className="mt-8 text-xs text-gray-700 font-mono">
                         {error.message}

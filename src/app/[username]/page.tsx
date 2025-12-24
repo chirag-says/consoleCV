@@ -1,155 +1,117 @@
-"use client";
-
 // ConsoleCV - Public Developer Portfolio Page
 // Dynamic portfolio page that showcases a developer's resume data
-// Uses the Space Theme by default with future support for multiple themes
+// Uses server-side metadata generation for SEO optimization
 
-import React, { useState, useEffect } from "react";
-import { useParams } from "next/navigation";
-import { Loader2, AlertCircle, Rocket } from "lucide-react";
-import dynamic from "next/dynamic";
-import type { ResumeData } from "@/types/resume";
+import { Metadata } from "next";
+import dbConnect from "@/lib/db";
+import Resume from "@/models/Resume";
+import PortfolioClient from "@/app/[username]/PortfolioClient";
 
-// Dynamically import Theme Components to optimize bundle size
-const CyberTheme = dynamic(() => import("@/components/portfolio/CyberTheme"), {
-    ssr: false,
-    loading: () => <PortfolioLoadingScreen />,
-});
-
-const TerminalTheme = dynamic(() => import("@/components/portfolio/TerminalTheme"), {
-    ssr: false,
-    loading: () => <PortfolioLoadingScreen />,
-});
-
-const MinimalTheme = dynamic(() => import("@/components/portfolio/MinimalTheme"), {
-    ssr: false,
-    loading: () => <PortfolioLoadingScreen />,
-});
-
-// =============================================================================
-// LOADING SCREEN COMPONENT
-// =============================================================================
-
-function PortfolioLoadingScreen() {
-    return (
-        <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center">
-            <div className="flex flex-col items-center gap-6">
-                <div className="w-16 h-16 rounded-full bg-slate-900 border-2 border-slate-800 flex items-center justify-center animate-pulse">
-                    <Rocket className="w-8 h-8 text-indigo-500" />
-                </div>
-                <div className="flex items-center gap-3">
-                    <Loader2 className="w-5 h-5 text-indigo-500 animate-spin" />
-                    <p className="text-slate-400 font-medium">Loading portfolio...</p>
-                </div>
-            </div>
-        </div>
-    );
+// Type for resume document from MongoDB
+interface ResumeDocument {
+    personal?: {
+        fullName?: string;
+        summary?: string;
+        github?: string;
+    };
+    title?: string;
+    isPublic?: boolean;
+    isPrimary?: boolean;
 }
 
 // =============================================================================
-// ERROR SCREEN COMPONENT
+// METADATA GENERATION (SEO)
 // =============================================================================
 
-interface ErrorScreenProps {
-    message: string;
-    username: string;
+interface PageProps {
+    params: Promise<{ username: string }>;
 }
 
-function ErrorScreen({ message, username }: ErrorScreenProps) {
-    return (
-        <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center px-4">
-            <div className="max-w-md text-center">
-                <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-red-500/10 mb-6">
-                    <AlertCircle className="w-8 h-8 text-red-500" />
-                </div>
-                <h1 className="text-2xl font-bold text-white mb-2">Portfolio Not Found</h1>
-                <p className="text-slate-400 mb-8">
-                    We couldn&apos;t find a portfolio for <span className="text-indigo-400">@{username}</span>
-                </p>
-                <div className="flex justify-center gap-4">
-                    <a href="/" className="px-6 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg transition-colors font-medium">
-                        Create Portfolio
-                    </a>
-                    <a href="/" className="px-6 py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-lg transition-colors font-medium">
-                        Go Home
-                    </a>
-                </div>
-            </div>
-        </div>
-    );
+async function getResumeData(username: string) {
+    await dbConnect();
+
+    const resume = await Resume.findOne({
+        "personal.github": { $regex: new RegExp(`^${username}$`, "i") },
+        isPublic: true,
+    })
+        .sort({ isPrimary: -1, updatedAt: -1 })
+        .lean();
+
+    return resume;
 }
 
-// =============================================================================
-// MAIN PAGE COMPONENT
-// =============================================================================
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+    const { username } = await params;
 
-export default function PortfolioPage() {
-    const params = useParams();
-    const username = params.username as string;
+    try {
+        const resume = await getResumeData(username);
 
-    // State
-    const [resumeData, setResumeData] = useState<ResumeData | null>(null);
-    const [isLoading, setIsLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
+        if (!resume) {
+            return {
+                title: `${username} - Portfolio Not Found | ConsoleCV`,
+                description: `Portfolio for ${username} is not available or not public.`,
+            };
+        }
 
-    // Fetch user's resume data
-    useEffect(() => {
-        const fetchPortfolio = async () => {
-            try {
-                const res = await fetch(`/api/public/${username}`, { cache: "no-store" });
+        // Extract data for metadata
+        const resumeDoc = resume as ResumeDocument;
+        const name = resumeDoc.personal?.fullName || username;
+        const title = resumeDoc.title || "Software Engineer";
+        const summary = resumeDoc.personal?.summary || `${name} is a ${title}. View their portfolio and professional experience.`;
 
-                if (!res.ok) {
-                    if (res.status === 404) {
-                        throw new Error("This user doesn't have a public resume yet.");
-                    }
-                    throw new Error("Failed to load portfolio data.");
-                }
+        // Truncate summary for meta description (optimal: 150-160 chars)
+        const metaDescription = summary.length > 155
+            ? summary.substring(0, 152) + "..."
+            : summary;
 
-                const data = await res.json();
-
-                if (!data.success || !data.data) {
-                    throw new Error("Invalid portfolio data received.");
-                }
-
-                setResumeData(data.data);
-            } catch (err) {
-                console.error("[Portfolio] Error:", err);
-                setError(err instanceof Error ? err.message : "An unexpected error occurred.");
-            } finally {
-                setIsLoading(false);
-            }
+        return {
+            title: `${name} - ${title} | ConsoleCV`,
+            description: metaDescription,
+            openGraph: {
+                title: `${name}'s Portfolio`,
+                description: summary,
+                type: "profile",
+                siteName: "ConsoleCV",
+                images: [
+                    {
+                        url: "/og-image.png",
+                        width: 1200,
+                        height: 630,
+                        alt: `${name}'s Developer Portfolio`,
+                    },
+                ],
+            },
+            twitter: {
+                card: "summary_large_image",
+                title: `${name} - ${title}`,
+                description: metaDescription,
+                images: ["/og-image.png"],
+            },
+            robots: {
+                index: true,
+                follow: true,
+            },
+            alternates: {
+                canonical: `/${username}`,
+            },
         };
-
-        if (username) {
-            fetchPortfolio();
-        }
-    }, [username]);
-
-    // Update document title when data loads
-    useEffect(() => {
-        if (resumeData?.personal?.fullName) {
-            document.title = `${resumeData.personal.fullName} | Developer Portfolio`;
-        }
-    }, [resumeData?.personal?.fullName]);
-
-    // Loading state
-    if (isLoading) {
-        return <PortfolioLoadingScreen />;
+    } catch (error) {
+        console.error("[Portfolio Metadata] Error:", error);
+        return {
+            title: `${username} - Portfolio | ConsoleCV`,
+            description: `View ${username}'s developer portfolio on ConsoleCV.`,
+        };
     }
+}
 
-    // Error state
-    if (error || !resumeData) {
-        return <ErrorScreen message={error || "Unknown error"} username={username} />;
-    }
+// =============================================================================
+// PAGE COMPONENT
+// =============================================================================
 
-    // Render the correct theme
-    switch (resumeData.theme) {
-        case "terminal":
-            return <TerminalTheme data={resumeData} />;
-        case "minimal":
-            return <MinimalTheme data={resumeData} />;
-        case "cyber":
-        default:
-            return <CyberTheme data={resumeData} />;
-    }
+export default async function PortfolioPage({ params }: PageProps) {
+    const { username } = await params;
+
+    // The actual portfolio rendering is handled by the client component
+    // We pass the username and let the client fetch and render
+    return <PortfolioClient username={username} />;
 }

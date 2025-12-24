@@ -438,28 +438,74 @@ export default function DashboardPage() {
                             <Loader2 className="w-8 h-8 text-emerald-500 animate-spin" />
                         </div>
                     ) : resumes.length === 0 ? (
-                        <div className="border border-dashed border-slate-800 rounded-3xl bg-slate-900/20 p-12 text-center">
-                            <div className="w-16 h-16 mx-auto mb-6 rounded-2xl bg-slate-800/50 flex items-center justify-center">
-                                <FileText className="w-8 h-8 text-slate-600" />
+                        <div className="border border-dashed border-slate-700/50 rounded-3xl bg-gradient-to-br from-slate-900/40 to-slate-900/20 p-16 text-center relative overflow-hidden">
+                            {/* Background decoration */}
+                            <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/5 via-transparent to-cyan-500/5 pointer-events-none" />
+
+                            <div className="relative">
+                                {/* Large Icon */}
+                                <div className="w-20 h-20 mx-auto mb-8 rounded-2xl bg-gradient-to-br from-slate-800 to-slate-900 border border-slate-700/50 flex items-center justify-center shadow-xl">
+                                    <div className="relative">
+                                        <FileText className="w-10 h-10 text-slate-500" />
+                                        <Sparkles className="w-5 h-5 text-emerald-500 absolute -top-1 -right-1 animate-pulse" />
+                                    </div>
+                                </div>
+
+                                {/* Title */}
+                                <h3 className="text-2xl font-bold text-white mb-3">
+                                    Ready to build your first resume?
+                                </h3>
+
+                                {/* Message */}
+                                <p className="text-slate-400 mb-10 max-w-md mx-auto leading-relaxed">
+                                    Get started in seconds with our editor or import an existing resume.
+                                    Create stunning developer portfolios that impress recruiters.
+                                </p>
+
+                                {/* CTA Buttons */}
+                                <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+                                    <button
+                                        onClick={handleCreateResume}
+                                        disabled={isCreating}
+                                        className="inline-flex items-center gap-2 px-8 py-4 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold rounded-xl transition-all shadow-lg shadow-emerald-500/25 hover:shadow-emerald-500/40 hover:-translate-y-0.5"
+                                    >
+                                        {isCreating ? (
+                                            <Loader2 className="w-5 h-5 animate-spin" />
+                                        ) : (
+                                            <Plus className="w-5 h-5" />
+                                        )}
+                                        Create New Resume
+                                    </button>
+                                    <Link
+                                        href="/portfolio/create"
+                                        className="inline-flex items-center gap-2 px-6 py-4 bg-slate-800/50 hover:bg-slate-800 text-white font-medium rounded-xl transition-all border border-slate-700/50 hover:border-emerald-500/30"
+                                    >
+                                        <Rocket className="w-5 h-5 text-cyan-400" />
+                                        Import Resume
+                                    </Link>
+                                </div>
+
+                                {/* Quick Tips */}
+                                <div className="mt-12 pt-8 border-t border-slate-800/50">
+                                    <p className="text-xs text-slate-500 uppercase tracking-wider mb-4 font-medium">
+                                        What you can do
+                                    </p>
+                                    <div className="flex flex-wrap justify-center gap-6 text-sm text-slate-400">
+                                        <span className="flex items-center gap-2">
+                                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                                            Create multiple resumes
+                                        </span>
+                                        <span className="flex items-center gap-2">
+                                            <span className="w-1.5 h-1.5 rounded-full bg-cyan-500" />
+                                            Export as PDF
+                                        </span>
+                                        <span className="flex items-center gap-2">
+                                            <span className="w-1.5 h-1.5 rounded-full bg-indigo-500" />
+                                            Public portfolio page
+                                        </span>
+                                    </div>
+                                </div>
                             </div>
-                            <h3 className="text-xl font-semibold text-white mb-2">
-                                No resumes yet
-                            </h3>
-                            <p className="text-slate-400 mb-8 max-w-sm mx-auto">
-                                Create your first developer-style resume and start impressing recruiters.
-                            </p>
-                            <button
-                                onClick={handleCreateResume}
-                                disabled={isCreating}
-                                className="inline-flex items-center gap-2 px-6 py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-medium rounded-xl transition-all shadow-lg shadow-emerald-500/20"
-                            >
-                                {isCreating ? (
-                                    <Loader2 className="w-5 h-5 animate-spin" />
-                                ) : (
-                                    <Sparkles className="w-5 h-5" />
-                                )}
-                                Create your first resume
-                            </button>
                         </div>
                     ) : (
                         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">

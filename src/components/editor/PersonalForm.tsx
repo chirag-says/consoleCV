@@ -26,6 +26,7 @@ export default function PersonalForm({ data, onChange }: PersonalFormProps) {
         watch,
         reset,
     } = useForm<PersonalFormValues>({
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         resolver: zodResolver(personalInfoSchema) as any,
         defaultValues: data,
         mode: "onChange",

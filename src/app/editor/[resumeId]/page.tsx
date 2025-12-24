@@ -4,7 +4,7 @@
 // Resume editor with real-time PDF preview using @react-pdf/renderer
 
 import React, { useState, useEffect } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
 import Link from "next/link";
 import dynamic from "next/dynamic";
 import {
@@ -104,7 +104,6 @@ function CollapsibleSection({
 
 export default function EditorPage() {
     const params = useParams();
-    const router = useRouter();
     const resumeId = params.resumeId as string;
 
     // Main resume data state
@@ -289,14 +288,19 @@ export default function EditorPage() {
                             <button
                                 onClick={handleSave}
                                 disabled={isSaving}
-                                className="flex items-center gap-2 px-4 py-2 bg-slate-800 hover:bg-slate-700 disabled:opacity-50 text-white font-medium rounded-lg transition-colors"
+                                className="flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 disabled:cursor-not-allowed text-white font-medium rounded-lg transition-all shadow-lg shadow-emerald-500/20"
                             >
                                 {isSaving ? (
-                                    <Loader2 className="w-4 h-4 animate-spin" />
+                                    <>
+                                        <Loader2 className="w-4 h-4 animate-spin" />
+                                        Saving...
+                                    </>
                                 ) : (
-                                    <Save className="w-4 h-4" />
+                                    <>
+                                        <Save className="w-4 h-4" />
+                                        Save Changes
+                                    </>
                                 )}
-                                Save
                             </button>
                             <PdfDownloadButton
                                 data={resumeData}

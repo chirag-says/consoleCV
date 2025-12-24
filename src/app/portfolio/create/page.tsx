@@ -5,26 +5,17 @@
 // Uses the heuristic parser for client-side PDF text extraction
 
 import React, { useState, useCallback, useRef } from "react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
 import {
     Upload,
-    FileText,
     Loader2,
     CheckCircle2,
     AlertTriangle,
-    Sparkles,
     ArrowRight,
     ArrowLeft,
     Rocket,
     Eye,
-    Edit3,
-    Trash2,
     User,
-    Mail,
-    Phone,
-    Github,
-    Linkedin,
     GraduationCap,
     Briefcase,
     FolderGit2,
@@ -754,8 +745,6 @@ function CompleteStep({ portfolioUrl }: CompleteStepProps) {
 // =============================================================================
 
 export default function PortfolioBuilderPage() {
-    const router = useRouter();
-
     // State
     const [currentStep, setCurrentStep] = useState<BuilderStep>("upload");
     const [uploadedResume, setUploadedResume] = useState<UploadedResume | null>(null);

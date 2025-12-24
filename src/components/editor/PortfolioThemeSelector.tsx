@@ -5,7 +5,7 @@
 // Features visual previews of each theme style
 
 import React from "react";
-import { Check, Palette, Terminal, Globe, Rocket } from "lucide-react";
+import { Check, Palette, Globe, Rocket } from "lucide-react";
 import type { ThemeId } from "@/types/resume";
 import { THEME_INFO } from "@/lib/themes";
 
@@ -59,7 +59,7 @@ function ThemeCard({ id, isSelected, onClick }: ThemeCardProps) {
                         </div>
                         <div className="text-emerald-500">{">"} init_portfolio</div>
                         <div className="text-zinc-500 mt-1">{"{"}</div>
-                        <div className="pl-1 text-blue-400">"dev": true</div>
+                        <div className="pl-1 text-blue-400">&quot;dev&quot;: true</div>
                         <div className="text-zinc-500">{"}"}</div>
                     </div>
                 );

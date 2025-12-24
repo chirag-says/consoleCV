@@ -549,7 +549,7 @@ function extractNameFromLines(lines: string[]): string {
 
     // Look in first 10 lines for a name-like line
     for (let i = 0; i < Math.min(10, lines.length); i++) {
-        let line = lines[i].trim();
+        const line = lines[i].trim();
 
         // Skip empty lines
         if (!line || line.length < 2) continue;
@@ -640,7 +640,7 @@ function extractNameFromEmail(email: string): string {
     if (!localPart) return "";
 
     // Remove numbers
-    let nameStr = localPart.replace(/\d+/g, "");
+    const nameStr = localPart.replace(/\d+/g, "");
 
     // Skip if it's a common username pattern or too short
     if (/^(admin|info|contact|hello|support|noreply|mail|email)/i.test(nameStr)) {

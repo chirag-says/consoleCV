@@ -12,14 +12,11 @@ import {
     Linkedin,
     Mail,
     ExternalLink,
-    Briefcase,
     Calendar,
-    MapPin,
     Loader2,
     ChevronRight,
     Rocket,
     Code2,
-    Zap,
 } from "lucide-react";
 import { pdf } from "@react-pdf/renderer";
 import { saveAs } from "file-saver";
@@ -180,7 +177,7 @@ interface TimelineItemProps {
     isLast: boolean;
 }
 
-function TimelineItem({ experience, index, isLast }: TimelineItemProps) {
+function TimelineItem({ experience, isLast }: TimelineItemProps) {
     return (
         <motion.div
             variants={fadeInUp}
@@ -232,7 +229,7 @@ interface ProjectCardProps {
     index: number;
 }
 
-function ProjectCard({ project, index }: ProjectCardProps) {
+function ProjectCard({ project }: ProjectCardProps) {
     return (
         <SpotlightCard className="p-6 h-full flex flex-col">
             <div className="flex items-start justify-between mb-4">
@@ -262,7 +259,7 @@ function ProjectCard({ project, index }: ProjectCardProps) {
 
             {project.techStack && project.techStack.length > 0 && (
                 <div className="flex flex-wrap gap-2 mt-auto pt-4 border-t border-white/5">
-                    {project.techStack.slice(0, 4).map((tech, i) => (
+                    {project.techStack.slice(0, 4).map((tech) => (
                         <span
                             key={tech}
                             className="px-2 py-1 text-xs rounded-md bg-white/5 text-slate-300 border border-white/10"
@@ -344,6 +341,7 @@ export default function SpaceTheme({ data }: SpaceThemeProps) {
                             >
                                 <div className="relative inline-block">
                                     <div className="absolute inset-0 bg-gradient-to-br from-indigo-500 to-pink-500 rounded-full blur-xl opacity-50 animate-pulse" />
+                                    {/* eslint-disable-next-line @next/next/no-img-element */}
                                     <img
                                         src={avatarUrl}
                                         alt={personal.fullName}
