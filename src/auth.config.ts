@@ -4,6 +4,8 @@
 import type { NextAuthConfig } from "next-auth";
 
 export const authConfig: NextAuthConfig = {
+    // Trust the host header from Vercel's proxy
+    trustHost: true,
     pages: {
         signIn: "/login",
         error: "/login", // Error code passed in url string
