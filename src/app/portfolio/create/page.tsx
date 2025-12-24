@@ -84,10 +84,10 @@ function StepIndicator({ currentStep }: StepIndicatorProps) {
                     <React.Fragment key={step.id}>
                         <div
                             className={`flex items-center gap-2 px-4 py-2 rounded-full transition-all ${isActive
-                                    ? "bg-gradient-to-r from-indigo-600 to-purple-600 text-white"
-                                    : isCompleted
-                                        ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
-                                        : "bg-slate-800 text-slate-500 border border-slate-700"
+                                ? "bg-gradient-to-r from-indigo-600 to-purple-600 text-white"
+                                : isCompleted
+                                    ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
+                                    : "bg-slate-800 text-slate-500 border border-slate-700"
                                 }`}
                         >
                             {isCompleted ? (
@@ -121,6 +121,7 @@ interface UploadStepProps {
 function UploadStep({ onFileProcessed }: UploadStepProps) {
     const [isDragging, setIsDragging] = useState(false);
     const [isProcessing, setIsProcessing] = useState(false);
+    const [processingStatus, setProcessingStatus] = useState<string>("");
     const [error, setError] = useState<string | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -132,9 +133,10 @@ function UploadStep({ onFileProcessed }: UploadStepProps) {
 
         setError(null);
         setIsProcessing(true);
+        setProcessingStatus("Extracting text from PDF...");
 
         try {
-            // Extract text from PDF
+            // Step 1: Extract text from PDF
             const extraction = await extractTextFromPdf(file);
 
             if (!extraction.success) {
@@ -143,9 +145,53 @@ function UploadStep({ onFileProcessed }: UploadStepProps) {
                 return;
             }
 
-            // Parse the extracted text
-            const parsedData = parseResumeHeuristic(extraction.text);
+            console.log("[Upload] PDF text extracted, length:", extraction.text.length);
+
+            // Step 2: Try AI-based parsing first
+            setProcessingStatus("Analyzing with AI...");
+            let parsedData = null;
+            let parsingMethod = "heuristic";
+            let aiError = null;
+
+            try {
+                const aiResponse = await fetch("/api/ai/parse-resume", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ text: extraction.text }),
+                });
+
+                const aiResult = await aiResponse.json();
+
+                if (aiResponse.ok && aiResult.success && aiResult.data) {
+                    parsedData = aiResult.data;
+                    parsingMethod = "ai";
+                    console.log("[Upload] AI parsing successful");
+                } else {
+                    aiError = aiResult.error || "AI parsing returned no data";
+                    console.warn("[Upload] AI parsing failed:", aiError);
+                }
+            } catch (fetchError) {
+                aiError = "AI service unavailable";
+                console.warn("[Upload] AI fetch error:", fetchError);
+            }
+
+            // Step 3: Fallback to heuristic parsing if AI failed
+            if (!parsedData) {
+                setProcessingStatus("Using pattern matching...");
+                console.log("[Upload] Falling back to heuristic parser");
+                parsedData = parseResumeHeuristic(extraction.text);
+            }
+
+            // Calculate confidence
             const confidence = getParsingConfidence(parsedData);
+
+            // Add parsing method info to issues
+            const issues = [...confidence.details];
+            if (parsingMethod === "ai") {
+                issues.unshift("✨ Parsed with AI for improved accuracy");
+            } else if (aiError) {
+                issues.unshift(`⚠️ AI unavailable (${aiError}), used pattern matching`);
+            }
 
             // Pass to parent
             onFileProcessed(
@@ -156,8 +202,10 @@ function UploadStep({ onFileProcessed }: UploadStepProps) {
                 },
                 {
                     data: parsedData,
-                    confidence: confidence.score,
-                    issues: confidence.details,
+                    confidence: parsingMethod === "ai"
+                        ? Math.max(confidence.score, 75) // AI parsing gets minimum 75% confidence
+                        : confidence.score,
+                    issues,
                 }
             );
         } catch (err) {
@@ -165,6 +213,7 @@ function UploadStep({ onFileProcessed }: UploadStepProps) {
             setError("An unexpected error occurred while processing your resume.");
         } finally {
             setIsProcessing(false);
+            setProcessingStatus("");
         }
     }, [onFileProcessed]);
 
@@ -216,8 +265,8 @@ function UploadStep({ onFileProcessed }: UploadStepProps) {
                 onDrop={handleDrop}
                 onClick={() => fileInputRef.current?.click()}
                 className={`relative p-12 border-2 border-dashed rounded-2xl cursor-pointer transition-all ${isDragging
-                        ? "border-indigo-500 bg-indigo-500/10"
-                        : "border-slate-700 hover:border-slate-600 bg-slate-900/50"
+                    ? "border-indigo-500 bg-indigo-500/10"
+                    : "border-slate-700 hover:border-slate-600 bg-slate-900/50"
                     } ${error ? "border-red-500/50" : ""}`}
             >
                 <input
@@ -237,7 +286,7 @@ function UploadStep({ onFileProcessed }: UploadStepProps) {
                             </div>
                         </div>
                         <p className="text-lg text-white font-medium mb-1">Processing your resume...</p>
-                        <p className="text-sm text-slate-400">Extracting information using AI-free parsing</p>
+                        <p className="text-sm text-slate-400">{processingStatus || "Extracting information..."}</p>
                     </div>
                 ) : (
                     <div className="flex flex-col items-center">
@@ -323,25 +372,25 @@ function PreviewStep({
 
             {/* Confidence Score */}
             <div className={`mb-6 p-4 rounded-xl flex items-center gap-4 ${parsingResult.confidence >= 70
-                    ? "bg-emerald-500/10 border border-emerald-500/20"
-                    : parsingResult.confidence >= 40
-                        ? "bg-amber-500/10 border border-amber-500/20"
-                        : "bg-red-500/10 border border-red-500/20"
+                ? "bg-emerald-500/10 border border-emerald-500/20"
+                : parsingResult.confidence >= 40
+                    ? "bg-amber-500/10 border border-amber-500/20"
+                    : "bg-red-500/10 border border-red-500/20"
                 }`}>
                 <div className={`w-12 h-12 rounded-full flex items-center justify-center text-lg font-bold ${parsingResult.confidence >= 70
-                        ? "bg-emerald-500/20 text-emerald-400"
-                        : parsingResult.confidence >= 40
-                            ? "bg-amber-500/20 text-amber-400"
-                            : "bg-red-500/20 text-red-400"
+                    ? "bg-emerald-500/20 text-emerald-400"
+                    : parsingResult.confidence >= 40
+                        ? "bg-amber-500/20 text-amber-400"
+                        : "bg-red-500/20 text-red-400"
                     }`}>
                     {parsingResult.confidence}%
                 </div>
                 <div>
                     <p className={`font-medium ${parsingResult.confidence >= 70
-                            ? "text-emerald-300"
-                            : parsingResult.confidence >= 40
-                                ? "text-amber-300"
-                                : "text-red-300"
+                        ? "text-emerald-300"
+                        : parsingResult.confidence >= 40
+                            ? "text-amber-300"
+                            : "text-red-300"
                         }`}>
                         {parsingResult.confidence >= 70 ? "Excellent Match" : parsingResult.confidence >= 40 ? "Partial Match" : "Low Match"}
                     </p>
@@ -752,13 +801,15 @@ export default function PortfolioBuilderPage() {
         setIsGenerating(true);
 
         try {
-            // Save resume to database
+            // Save resume to database with public visibility
             const response = await fetch("/api/resume", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                     ...resumeData,
                     title: `${resumeData.personal.fullName}'s Portfolio`,
+                    isPublic: true,  // Make the portfolio publicly accessible
+                    isPrimary: true, // Set as primary resume for this user
                 }),
             });
 

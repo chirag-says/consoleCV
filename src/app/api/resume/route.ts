@@ -197,12 +197,23 @@ export async function POST(request: NextRequest) {
         const existingResumeCount = await Resume.countDocuments({ userId: session.user.id });
         const isFirstResume = existingResumeCount === 0;
 
+        // Determine isPrimary: use provided value or auto-set for first resume
+        const shouldBePrimary = validationResult.data.isPrimary ?? isFirstResume;
+
+        // If setting as primary, unset any existing primary resume for this user
+        if (shouldBePrimary && !isFirstResume) {
+            await Resume.updateMany(
+                { userId: session.user.id },
+                { $set: { isPrimary: false } }
+            );
+        }
+
         // Create resume with validated data and authenticated user's ID
         const resume = await Resume.create({
             ...validationResult.data,
             userId: session.user.id, // Force userId from session
-            isPrimary: isFirstResume, // First resume is automatically primary
-            isPublic: false, // Default to private
+            isPrimary: shouldBePrimary, // First resume is automatically primary, or use provided value
+            isPublic: validationResult.data.isPublic ?? false, // Use provided value or default to private
         });
 
         // Audit log the creation
