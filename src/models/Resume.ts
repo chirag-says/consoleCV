@@ -9,6 +9,7 @@ export interface IResume extends Omit<ResumeData, "_id" | "userId">, Document {
     userId: mongoose.Types.ObjectId;
     title: string;
     templateId: "latex" | "modern";
+    theme: "cyber" | "terminal" | "minimal";
     isPrimary: boolean;
     isPublic: boolean;
     slug?: string;
@@ -24,6 +25,7 @@ const PersonalSchema = new Schema(
         github: { type: String, default: "" },
         linkedin: { type: String, default: "" },
         phone: { type: String, default: "" },
+        summary: { type: String, default: "" },
     },
     { _id: false }
 );
@@ -79,6 +81,11 @@ const ResumeSchema = new Schema<IResume>(
             type: String,
             enum: ["latex", "modern"],
             default: "latex",
+        },
+        theme: {
+            type: String,
+            enum: ["cyber", "terminal", "minimal"],
+            default: "cyber",
         },
         isPrimary: {
             type: Boolean,

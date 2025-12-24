@@ -138,6 +138,10 @@ export const personalInfoSchema = z.object({
         .optional()
         .default("")
         .transform((val) => (val ? val.trim() : "")),
+    summary: sanitizedString(2000)
+        .optional()
+        .default("")
+        .transform((val) => val || ""),
 });
 
 /**
@@ -182,6 +186,8 @@ export const resumeSchema = z.object({
     title: sanitizedString(200)
         .optional()
         .default("Untitled Resume"),
+    templateId: z.enum(["latex", "modern"]).optional(),
+    theme: z.enum(["cyber", "terminal", "minimal"]).optional().default("cyber"),
     isPrimary: z.boolean().optional().default(false),
     isPublic: z.boolean().optional().default(false),
     slug: z
@@ -199,6 +205,7 @@ export const resumeSchema = z.object({
         github: "",
         linkedin: "",
         phone: "",
+        summary: "",
     }),
     education: z
         .array(educationSchema)

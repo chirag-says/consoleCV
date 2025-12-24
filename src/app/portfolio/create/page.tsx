@@ -37,6 +37,8 @@ import { extractTextFromPdf, formatFileSize, isValidPdfFile } from "@/lib/pdf-pa
 import { parseResumeHeuristic, getParsingConfidence } from "@/lib/heuristic-parser";
 import type { ResumeData } from "@/types/resume";
 import { defaultResumeData } from "@/types/resume";
+import type { ThemeId } from "@/types/resume";
+import { PortfolioThemeSelector } from "@/components/editor";
 
 // =============================================================================
 // TYPES
@@ -602,9 +604,11 @@ interface CustomizeStepProps {
     onBack: () => void;
     onGenerate: () => void;
     isGenerating: boolean;
+    selectedTheme: ThemeId;
+    onThemeChange: (theme: ThemeId) => void;
 }
 
-function CustomizeStep({ resumeData, onBack, onGenerate, isGenerating }: CustomizeStepProps) {
+function CustomizeStep({ resumeData, onBack, onGenerate, isGenerating, selectedTheme, onThemeChange }: CustomizeStepProps) {
     return (
         <div className="max-w-2xl mx-auto">
             <div className="text-center mb-8">
@@ -615,36 +619,12 @@ function CustomizeStep({ resumeData, onBack, onGenerate, isGenerating }: Customi
             </div>
 
             {/* Theme Options */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
-                {/* Space Theme */}
-                <div className="relative p-1 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-2xl">
-                    <div className="p-5 bg-[#030014] rounded-xl">
-                        <div className="h-32 bg-gradient-to-br from-indigo-900/50 to-purple-900/50 rounded-lg mb-4 flex items-center justify-center relative overflow-hidden">
-                            <div className="absolute w-20 h-20 bg-indigo-500/30 rounded-full blur-xl" />
-                            <Rocket className="w-12 h-12 text-indigo-400 relative z-10" />
-                        </div>
-                        <h3 className="text-white font-semibold mb-1">Deep Space</h3>
-                        <p className="text-slate-400 text-sm mb-3">
-                            Immersive dark theme with neon accents and starfield
-                        </p>
-                        <div className="flex items-center gap-2">
-                            <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-                            <span className="text-emerald-400 text-sm font-medium">Selected</span>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Coming Soon Themes */}
-                <div className="p-5 bg-slate-800/50 border border-slate-700 rounded-2xl opacity-60">
-                    <div className="h-32 bg-slate-800 rounded-lg mb-4 flex items-center justify-center">
-                        <Palette className="w-12 h-12 text-slate-600" />
-                    </div>
-                    <h3 className="text-slate-400 font-semibold mb-1">More Themes</h3>
-                    <p className="text-slate-500 text-sm mb-3">
-                        Minimal, Corporate, and more coming soon
-                    </p>
-                    <span className="text-slate-500 text-sm">Coming Soon</span>
-                </div>
+            <div className="mb-8 bg-slate-800/50 p-6 rounded-2xl border border-slate-700/50">
+                <PortfolioThemeSelector
+                    selectedTheme={selectedTheme}
+                    onChange={onThemeChange}
+                    className="w-full"
+                />
             </div>
 
             {/* Portfolio URL Preview */}
@@ -781,6 +761,7 @@ export default function PortfolioBuilderPage() {
     const [uploadedResume, setUploadedResume] = useState<UploadedResume | null>(null);
     const [parsingResult, setParsingResult] = useState<ParsingResult | null>(null);
     const [resumeData, setResumeData] = useState<ResumeData>(defaultResumeData);
+    const [selectedTheme, setSelectedTheme] = useState<ThemeId>("cyber");
     const [isGenerating, setIsGenerating] = useState(false);
     const [portfolioUrl, setPortfolioUrl] = useState("");
 
@@ -808,6 +789,7 @@ export default function PortfolioBuilderPage() {
                 body: JSON.stringify({
                     ...resumeData,
                     title: `${resumeData.personal.fullName}'s Portfolio`,
+                    theme: selectedTheme, // Save selected theme
                     isPublic: true,  // Make the portfolio publicly accessible
                     isPrimary: true, // Set as primary resume for this user
                 }),
@@ -817,8 +799,9 @@ export default function PortfolioBuilderPage() {
                 throw new Error("Failed to save portfolio");
             }
 
-            // Set portfolio URL
-            const url = `${window.location.origin}/${resumeData.personal.github}`;
+            // Set portfolio URL (correctly handling GitHub username)
+            const cleanUsername = resumeData.personal.github.replace(/^github\.com\//, "").replace(/\/$/, "");
+            const url = `${window.location.origin}/${cleanUsername}`;
             setPortfolioUrl(url);
             setCurrentStep("complete");
         } catch (error) {
@@ -827,7 +810,7 @@ export default function PortfolioBuilderPage() {
         } finally {
             setIsGenerating(false);
         }
-    }, [resumeData]);
+    }, [resumeData, selectedTheme]);
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
@@ -877,6 +860,8 @@ export default function PortfolioBuilderPage() {
                         onBack={() => setCurrentStep("preview")}
                         onGenerate={handleGenerate}
                         isGenerating={isGenerating}
+                        selectedTheme={selectedTheme}
+                        onThemeChange={setSelectedTheme}
                     />
                 )}
 

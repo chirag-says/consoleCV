@@ -7,6 +7,7 @@ export interface PersonalInfo {
     github: string;
     linkedin: string;
     phone: string;
+    summary?: string;
 }
 
 export interface Education {
@@ -34,11 +35,15 @@ export interface Project {
 // Template ID type for type-safe template selection
 export type TemplateId = "latex" | "modern";
 
+// Theme ID type for portfolio themes
+export type ThemeId = "cyber" | "terminal" | "minimal";
+
 export interface ResumeData {
     _id?: string;
     userId?: string;
     title?: string;
     templateId?: TemplateId;
+    theme?: ThemeId;
     isPrimary?: boolean;
     isPublic?: boolean;
     slug?: string;

@@ -10,14 +10,21 @@ import { Loader2, AlertCircle, Rocket } from "lucide-react";
 import dynamic from "next/dynamic";
 import type { ResumeData } from "@/types/resume";
 
-// Dynamically import SpaceTheme to avoid SSR issues with framer-motion
-const SpaceTheme = dynamic(
-    () => import("@/components/portfolio/SpaceTheme"),
-    {
-        ssr: false,
-        loading: () => <PortfolioLoadingScreen />,
-    }
-);
+// Dynamically import Theme Components to optimize bundle size
+const CyberTheme = dynamic(() => import("@/components/portfolio/CyberTheme"), {
+    ssr: false,
+    loading: () => <PortfolioLoadingScreen />,
+});
+
+const TerminalTheme = dynamic(() => import("@/components/portfolio/TerminalTheme"), {
+    ssr: false,
+    loading: () => <PortfolioLoadingScreen />,
+});
+
+const MinimalTheme = dynamic(() => import("@/components/portfolio/MinimalTheme"), {
+    ssr: false,
+    loading: () => <PortfolioLoadingScreen />,
+});
 
 // =============================================================================
 // LOADING SCREEN COMPONENT
@@ -25,28 +32,15 @@ const SpaceTheme = dynamic(
 
 function PortfolioLoadingScreen() {
     return (
-        <div className="min-h-screen bg-[#030014] flex flex-col items-center justify-center">
-            {/* Animated gradient background */}
-            <div className="fixed inset-0 pointer-events-none">
-                <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-indigo-500/20 rounded-full blur-[120px] animate-pulse" />
-                <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-pink-500/20 rounded-full blur-[120px] animate-pulse" />
-            </div>
-
-            <div className="relative z-10 flex flex-col items-center gap-6">
-                {/* Animated logo */}
-                <div className="relative">
-                    <div className="absolute inset-0 bg-gradient-to-br from-indigo-500 to-pink-500 rounded-2xl blur-xl opacity-50 animate-pulse" />
-                    <div className="relative w-20 h-20 rounded-2xl bg-gradient-to-br from-indigo-600 to-pink-600 flex items-center justify-center">
-                        <Rocket className="w-10 h-10 text-white animate-bounce" />
-                    </div>
+        <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center">
+            <div className="flex flex-col items-center gap-6">
+                <div className="w-16 h-16 rounded-full bg-slate-900 border-2 border-slate-800 flex items-center justify-center animate-pulse">
+                    <Rocket className="w-8 h-8 text-indigo-500" />
                 </div>
-
                 <div className="flex items-center gap-3">
-                    <Loader2 className="w-5 h-5 text-indigo-400 animate-spin" />
-                    <p className="text-slate-400 text-lg">Loading portfolio...</p>
+                    <Loader2 className="w-5 h-5 text-indigo-500 animate-spin" />
+                    <p className="text-slate-400 font-medium">Loading portfolio...</p>
                 </div>
-
-                <p className="text-slate-600 text-sm">Preparing your developer showcase</p>
             </div>
         </div>
     );
@@ -63,60 +57,23 @@ interface ErrorScreenProps {
 
 function ErrorScreen({ message, username }: ErrorScreenProps) {
     return (
-        <div className="min-h-screen bg-[#030014] flex flex-col items-center justify-center px-4">
-            {/* Animated gradient background */}
-            <div className="fixed inset-0 pointer-events-none">
-                <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-red-500/10 rounded-full blur-[120px]" />
-                <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-indigo-500/10 rounded-full blur-[120px]" />
-            </div>
-
-            <div className="relative z-10 text-center max-w-md">
-                {/* Error icon */}
-                <div className="mb-8">
-                    <div className="relative inline-block">
-                        <div className="absolute inset-0 bg-red-500/30 rounded-2xl blur-xl" />
-                        <div className="relative w-20 h-20 rounded-2xl bg-red-500/20 border border-red-500/30 flex items-center justify-center">
-                            <AlertCircle className="w-10 h-10 text-red-400" />
-                        </div>
-                    </div>
+        <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center px-4">
+            <div className="max-w-md text-center">
+                <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-red-500/10 mb-6">
+                    <AlertCircle className="w-8 h-8 text-red-500" />
                 </div>
-
-                <h1 className="text-3xl sm:text-4xl font-bold text-white mb-4">
-                    Portfolio Not Found
-                </h1>
-
-                <p className="text-slate-400 mb-3">
-                    We couldn&apos;t find a portfolio for <span className="text-indigo-400 font-medium">@{username}</span>
+                <h1 className="text-2xl font-bold text-white mb-2">Portfolio Not Found</h1>
+                <p className="text-slate-400 mb-8">
+                    We couldn&apos;t find a portfolio for <span className="text-indigo-400">@{username}</span>
                 </p>
-
-                <p className="text-slate-500 text-sm mb-8">
-                    {message}
-                </p>
-
-                <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                    <a
-                        href="/"
-                        className="px-6 py-3 bg-gradient-to-r from-indigo-600 to-pink-600 hover:from-indigo-500 hover:to-pink-500 text-white font-medium rounded-xl transition-all shadow-lg shadow-indigo-500/25"
-                    >
-                        Create Your Portfolio
+                <div className="flex justify-center gap-4">
+                    <a href="/" className="px-6 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg transition-colors font-medium">
+                        Create Portfolio
                     </a>
-                    <a
-                        href="/"
-                        className="px-6 py-3 bg-white/5 hover:bg-white/10 border border-white/10 text-white font-medium rounded-xl transition-all"
-                    >
+                    <a href="/" className="px-6 py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-lg transition-colors font-medium">
                         Go Home
                     </a>
                 </div>
-            </div>
-
-            {/* Footer */}
-            <div className="absolute bottom-8 left-0 right-0 text-center">
-                <p className="text-slate-600 text-sm">
-                    Powered by{" "}
-                    <a href="/" className="text-indigo-400 hover:text-indigo-300">
-                        ConsoleCV
-                    </a>
-                </p>
             </div>
         </div>
     );
@@ -139,7 +96,7 @@ export default function PortfolioPage() {
     useEffect(() => {
         const fetchPortfolio = async () => {
             try {
-                const res = await fetch(`/api/public/${username}`);
+                const res = await fetch(`/api/public/${username}`, { cache: "no-store" });
 
                 if (!res.ok) {
                     if (res.status === 404) {
@@ -171,7 +128,7 @@ export default function PortfolioPage() {
     // Update document title when data loads
     useEffect(() => {
         if (resumeData?.personal?.fullName) {
-            document.title = `${resumeData.personal.fullName} | Developer Portfolio - ConsoleCV`;
+            document.title = `${resumeData.personal.fullName} | Developer Portfolio`;
         }
     }, [resumeData?.personal?.fullName]);
 
@@ -185,10 +142,14 @@ export default function PortfolioPage() {
         return <ErrorScreen message={error || "Unknown error"} username={username} />;
     }
 
-    // Future: Support multiple themes based on user preference
-    // const ThemeComponent = getPortfolioTheme(resumeData.portfolioTemplateId);
-    // return <ThemeComponent data={resumeData} />;
-
-    // For now, use SpaceTheme as default
-    return <SpaceTheme data={resumeData} />;
+    // Render the correct theme
+    switch (resumeData.theme) {
+        case "terminal":
+            return <TerminalTheme data={resumeData} />;
+        case "minimal":
+            return <MinimalTheme data={resumeData} />;
+        case "cyber":
+        default:
+            return <CyberTheme data={resumeData} />;
+    }
 }

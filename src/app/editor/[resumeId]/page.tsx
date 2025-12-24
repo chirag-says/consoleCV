@@ -19,8 +19,9 @@ import {
     Target,
     AlertCircle,
     Github,
+    Globe,
 } from "lucide-react";
-import type { ResumeData, TemplateId } from "@/types/resume";
+import type { ResumeData, TemplateId, ThemeId } from "@/types/resume";
 import { defaultResumeData } from "@/types/resume";
 import {
     PersonalForm,
@@ -29,6 +30,7 @@ import {
     ProjectsForm,
     SkillsForm,
     TemplateSelector,
+    PortfolioThemeSelector,
     AtsAnalyzer,
 } from "@/components/editor";
 import GitHubImporter from "@/components/editor/GitHubImporter";
@@ -161,6 +163,14 @@ export default function EditorPage() {
 
     const updateTemplate = (templateId: TemplateId) => {
         setResumeData((prev) => ({ ...prev, templateId }));
+    };
+
+    const updateTheme = (theme: ThemeId) => {
+        setResumeData((prev) => ({ ...prev, theme }));
+    };
+
+    const updateSettings = (key: "isPublic" | "isPrimary", value: boolean) => {
+        setResumeData((prev) => ({ ...prev, [key]: value }));
     };
 
     // Save to database
@@ -305,11 +315,48 @@ export default function EditorPage() {
                 <div className="flex gap-6">
                     {/* Left Side - Editor */}
                     <div className="w-1/2 space-y-4 max-h-[calc(100vh-8rem)] overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-slate-700 scrollbar-track-transparent">
+
+                        {/* Visibility Settings - manual control for Primary/Public */}
+                        <div className="p-4 bg-slate-800/50 border border-slate-700/50 rounded-xl space-y-3">
+                            <h3 className="text-sm font-medium text-white flex items-center gap-2">
+                                <Globe className="w-4 h-4 text-indigo-400" />
+                                Visibility Settings
+                            </h3>
+
+                            <div className="flex items-center justify-between">
+                                <span className="text-sm text-slate-400">Public Portfolio</span>
+                                <input
+                                    type="checkbox"
+                                    checked={!!resumeData.isPublic}
+                                    onChange={(e) => updateSettings("isPublic", e.target.checked)}
+                                    className="w-4 h-4 rounded border-slate-600 bg-slate-700 text-indigo-500 focus:ring-offset-slate-800"
+                                />
+                            </div>
+
+                            <div className="flex items-center justify-between">
+                                <span className="text-sm text-slate-400">Set as Primary</span>
+                                <input
+                                    type="checkbox"
+                                    checked={!!resumeData.isPrimary}
+                                    onChange={(e) => updateSettings("isPrimary", e.target.checked)}
+                                    className="w-4 h-4 rounded border-slate-600 bg-slate-700 text-indigo-500 focus:ring-offset-slate-800"
+                                />
+                            </div>
+                        </div>
+
                         {/* Template Selector */}
                         <div className="p-4 bg-gradient-to-r from-slate-800/50 to-slate-800/30 border border-slate-700/50 rounded-xl">
                             <TemplateSelector
                                 selectedTemplate={resumeData.templateId || "latex"}
                                 onChange={updateTemplate}
+                            />
+                        </div>
+
+                        {/* Portfolio Theme Selector */}
+                        <div className="p-4 bg-gradient-to-r from-indigo-500/10 to-purple-500/10 border border-indigo-500/20 rounded-xl">
+                            <PortfolioThemeSelector
+                                selectedTheme={resumeData.theme || "cyber"}
+                                onChange={updateTheme}
                             />
                         </div>
 
