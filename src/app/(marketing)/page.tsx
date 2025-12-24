@@ -31,6 +31,12 @@ export default function LandingPage() {
                         </div>
                         <div className="flex items-center gap-4">
                             <Link
+                                href="/about"
+                                className="hidden sm:block px-4 py-2 text-slate-300 hover:text-white transition-colors"
+                            >
+                                About
+                            </Link>
+                            <Link
                                 href="/login"
                                 className="px-4 py-2 text-slate-300 hover:text-white transition-colors"
                             >
@@ -239,11 +245,31 @@ export default function LandingPage() {
 
                 {/* Footer */}
                 <footer className="border-t border-slate-800/50 py-8">
-                    <div className="max-w-6xl mx-auto px-6 text-center text-slate-500 text-sm">
-                        <p>
-                            © {new Date().getFullYear()} ConsoleCV. Built for software
-                            interns, by developers.
-                        </p>
+                    <div className="max-w-6xl mx-auto px-6">
+                        <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+                            <p className="text-slate-500 text-sm">
+                                © {new Date().getFullYear()} ConsoleCV. Built for software interns.
+                            </p>
+                            <p className="text-slate-500 text-sm">
+                                Designed & Built by{" "}
+                                <a
+                                    href="https://github.com/chirag-says"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-slate-400 hover:text-emerald-400 transition-colors"
+                                >
+                                    Chirag
+                                </a>
+                            </p>
+                            <div className="flex items-center gap-4 text-sm">
+                                <Link href="/about" className="text-slate-400 hover:text-white transition-colors">
+                                    About
+                                </Link>
+                                <Link href="/login" className="text-slate-400 hover:text-white transition-colors">
+                                    Login
+                                </Link>
+                            </div>
+                        </div>
                     </div>
                 </footer>
             </main>

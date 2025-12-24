@@ -281,10 +281,10 @@ export default function DashboardPage() {
     const firstName = session?.user?.name?.split(" ")[0] || "Developer";
 
     return (
-        <div className="min-h-screen bg-[#050505] relative overflow-hidden selection:bg-emerald-500/30 selection:text-emerald-200">
-            {/* Subtle Grid Background */}
-            <div className="absolute inset-0 bg-[radial-gradient(#ffffff08_1px,transparent_1px)] [background-size:24px_24px] pointer-events-none" />
-            <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[#050505]/80 to-[#050505] pointer-events-none" />
+        <div className="min-h-screen bg-[#050505] relative selection:bg-emerald-500/30 selection:text-emerald-200">
+            {/* Subtle Grid Background - Fixed to viewport */}
+            <div className="fixed inset-0 bg-[radial-gradient(#ffffff08_1px,transparent_1px)] [background-size:24px_24px] pointer-events-none" />
+            <div className="fixed inset-0 bg-gradient-to-b from-transparent via-[#050505]/80 to-[#050505] pointer-events-none" />
 
             {/* Navigation */}
             <nav className="border-b border-white/5 bg-[#050505]/80 backdrop-blur-xl sticky top-0 z-20">
@@ -540,15 +540,27 @@ export default function DashboardPage() {
             </main>
 
             {/* Footer */}
-            <footer className="border-t border-white/5 mt-12 sm:mt-20 bg-[#020202]">
+            {/* Footer */}
+            <footer className="border-t border-white/10 mt-12 sm:mt-20 backdrop-blur-sm">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8 sm:py-12 flex flex-col md:flex-row justify-between items-center gap-4 sm:gap-6">
-                    <p className="text-sm text-slate-600">
+                    <p className="text-sm text-slate-400">
                         © {new Date().getFullYear()} ConsoleCV. Engineered for developers.
                     </p>
-                    <div className="flex gap-6 text-sm text-slate-500">
+                    <p className="text-sm text-slate-400">
+                        Designed & Built by{" "}
+                        <a
+                            href="https://github.com/chirag-says"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-white hover:text-emerald-400 transition-colors font-medium"
+                        >
+                            Chirag
+                        </a>
+                    </p>
+                    <div className="flex gap-6 text-sm text-slate-400">
+                        <Link href="/about" className="hover:text-emerald-400 transition-colors">About</Link>
                         <a href="#" className="hover:text-emerald-400 transition-colors">Privacy</a>
                         <a href="#" className="hover:text-emerald-400 transition-colors">Terms</a>
-                        <a href="#" className="hover:text-emerald-400 transition-colors">Support</a>
                     </div>
                 </div>
             </footer>
