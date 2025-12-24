@@ -86,18 +86,18 @@ function ResumeCard({ resume, onDelete, onRename }: ResumeCardProps) {
             {/* Ambient background glow */}
             <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/5 to-cyan-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
 
-            <div className="relative p-6">
-                <div className="flex justify-between items-start mb-6">
+            <div className="relative p-4 sm:p-6">
+                <div className="flex justify-between items-start mb-4 sm:mb-6">
                     {/* Document Icon */}
                     <Link href={`/editor/${resume._id}`} className="block relative">
                         <div className="absolute inset-0 bg-emerald-500 blur-xl opacity-0 group-hover:opacity-20 transition-opacity duration-500" />
-                        <div className="relative w-12 h-12 rounded-2xl bg-slate-800/50 border border-slate-700/50 flex items-center justify-center group-hover:border-emerald-500/30 transition-colors">
-                            <FileText className="w-5 h-5 text-slate-400 group-hover:text-emerald-400 transition-colors" />
+                        <div className="relative w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-slate-800/50 border border-slate-700/50 flex items-center justify-center group-hover:border-emerald-500/30 transition-colors">
+                            <FileText className="w-4 h-4 sm:w-5 sm:h-5 text-slate-400 group-hover:text-emerald-400 transition-colors" />
                         </div>
                     </Link>
 
-                    {/* Actions */}
-                    <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-all duration-200 translate-x-2 group-hover:translate-x-0">
+                    {/* Actions - Always visible on mobile, hover on desktop */}
+                    <div className="flex gap-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-all duration-200 sm:translate-x-2 sm:group-hover:translate-x-0">
                         {resume.personal?.github && (
                             <Link
                                 href={`/${resume.personal.github}`}
@@ -129,15 +129,15 @@ function ResumeCard({ resume, onDelete, onRename }: ResumeCardProps) {
                                 onChange={(e) => setTitle(e.target.value)}
                                 onBlur={() => handleSave()}
                                 onKeyDown={handleKeyDown}
-                                className="w-full bg-slate-800 border border-emerald-500/50 rounded-lg px-2 py-1 text-xl font-medium text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
+                                className="w-full bg-slate-800 border border-emerald-500/50 rounded-lg px-2 py-1 text-base sm:text-xl font-medium text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
                                 onClick={(e) => e.stopPropagation()}
                             />
                             {isSaving && <Loader2 className="w-4 h-4 animate-spin text-emerald-500" />}
                         </div>
                     ) : (
                         <div className="group/title flex items-center gap-2 mb-2">
-                            <Link href={`/editor/${resume._id}`} className="block flex-1">
-                                <h3 className="text-xl font-medium text-slate-200 group-hover:text-white transition-colors truncate">
+                            <Link href={`/editor/${resume._id}`} className="block flex-1 min-w-0">
+                                <h3 className="text-base sm:text-xl font-medium text-slate-200 group-hover:text-white transition-colors truncate">
                                     {resume.title || "Untitled Resume"}
                                 </h3>
                             </Link>
@@ -156,11 +156,11 @@ function ResumeCard({ resume, onDelete, onRename }: ResumeCardProps) {
                     )}
 
                     <Link href={`/editor/${resume._id}`} className="block">
-                        <p className="text-sm text-slate-500 mb-6 font-mono text-xs tracking-wide uppercase">
+                        <p className="text-slate-500 mb-4 sm:mb-6 font-mono text-xs tracking-wide uppercase truncate">
                             {resume.personal?.fullName || "No Name Set"}
                         </p>
 
-                        <div className="flex items-center justify-between pt-5 border-t border-slate-800/50">
+                        <div className="flex items-center justify-between pt-4 sm:pt-5 border-t border-slate-800/50">
                             <span className="flex items-center gap-2 text-xs text-slate-500 font-medium">
                                 <Clock className="w-3.5 h-3.5" />
                                 Just now
@@ -288,7 +288,7 @@ export default function DashboardPage() {
 
             {/* Navigation */}
             <nav className="border-b border-white/5 bg-[#050505]/80 backdrop-blur-xl sticky top-0 z-20">
-                <div className="max-w-7xl mx-auto px-6 py-4">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3 sm:py-4">
                     <div className="flex items-center justify-between">
                         <Link href="/dashboard" className="flex items-center gap-3 group">
                             <div className="relative">
@@ -302,12 +302,12 @@ export default function DashboardPage() {
                             </span>
                         </Link>
 
-                        <div className="flex items-center gap-6">
-                            <div className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/5 border border-white/5 text-xs text-slate-400 font-mono">
+                        <div className="flex items-center gap-2 sm:gap-6">
+                            <div className="hidden lg:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/5 border border-white/5 text-xs text-slate-400 font-mono">
                                 <Command className="w-3 h-3" />
                                 <span>K</span>
                             </div>
-                            <div className="h-6 w-px bg-white/10" />
+                            <div className="hidden lg:block h-6 w-px bg-white/10" />
                             <div className="flex items-center gap-3">
                                 <span className="text-sm font-medium text-slate-400 hidden sm:block">
                                     {session?.user?.email}
@@ -333,14 +333,14 @@ export default function DashboardPage() {
             </nav>
 
             {/* Main Content */}
-            <main className="relative max-w-7xl mx-auto px-6 py-12">
+            <main className="relative max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-12">
                 {/* Header Section */}
-                <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-16">
+                <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 sm:gap-6 mb-8 sm:mb-16">
                     <div>
-                        <h1 className="text-4xl font-bold text-white mb-3 tracking-tight">
+                        <h1 className="text-2xl sm:text-4xl font-bold text-white mb-2 sm:mb-3 tracking-tight">
                             Hello, <span className="text-emerald-400">{firstName}</span>
                         </h1>
-                        <p className="text-slate-400 text-lg max-w-xl leading-relaxed">
+                        <p className="text-slate-400 text-sm sm:text-lg max-w-xl leading-relaxed">
                             Manage your career documents and analyze job fit with our intelligent tools.
                         </p>
                     </div>
@@ -358,14 +358,14 @@ export default function DashboardPage() {
                 </div>
 
                 {/* Quick Actions Grid */}
-                <section className="mb-16">
+                <section className="mb-8 sm:mb-16">
                     <div className="flex items-center gap-3 mb-6">
                         <div className="h-px bg-white/10 flex-1" />
                         <span className="text-xs font-mono text-slate-500 uppercase tracking-widest">Quick Actions</span>
                         <div className="h-px bg-white/10 flex-1" />
                     </div>
 
-                    <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
                         <DashboardCard
                             title="Create New Resume"
                             description="Start fresh with our guided CLI-style editor"
@@ -417,18 +417,18 @@ export default function DashboardPage() {
 
                 {/* Resumes Section */}
                 <section>
-                    <div className="flex items-center justify-between mb-8">
-                        <h2 className="text-xl font-bold text-white flex items-center gap-3">
-                            <FileText className="w-5 h-5 text-emerald-500" />
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 sm:mb-8">
+                        <h2 className="text-lg sm:text-xl font-bold text-white flex items-center gap-2 sm:gap-3">
+                            <FileText className="w-4 h-4 sm:w-5 sm:h-5 text-emerald-500" />
                             Recent Resumes
                         </h2>
 
-                        <div className="relative group">
+                        <div className="relative group w-full sm:w-auto">
                             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 group-focus-within:text-emerald-500 transition-colors" />
                             <input
                                 type="text"
                                 placeholder="Search documents..."
-                                className="pl-10 pr-4 py-2 bg-slate-900/50 border border-slate-800 rounded-xl text-sm text-slate-300 focus:outline-none focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/50 transition-all w-64 placeholder:text-slate-600"
+                                className="w-full sm:w-64 pl-10 pr-4 py-2.5 sm:py-2 bg-slate-900/50 border border-slate-800 rounded-xl text-sm text-slate-300 focus:outline-none focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/50 transition-all placeholder:text-slate-600"
                             />
                         </div>
                     </div>
@@ -438,36 +438,35 @@ export default function DashboardPage() {
                             <Loader2 className="w-8 h-8 text-emerald-500 animate-spin" />
                         </div>
                     ) : resumes.length === 0 ? (
-                        <div className="border border-dashed border-slate-700/50 rounded-3xl bg-gradient-to-br from-slate-900/40 to-slate-900/20 p-16 text-center relative overflow-hidden">
+                        <div className="border border-dashed border-slate-700/50 rounded-2xl sm:rounded-3xl bg-gradient-to-br from-slate-900/40 to-slate-900/20 p-6 sm:p-16 text-center relative overflow-hidden">
                             {/* Background decoration */}
                             <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/5 via-transparent to-cyan-500/5 pointer-events-none" />
 
                             <div className="relative">
                                 {/* Large Icon */}
-                                <div className="w-20 h-20 mx-auto mb-8 rounded-2xl bg-gradient-to-br from-slate-800 to-slate-900 border border-slate-700/50 flex items-center justify-center shadow-xl">
+                                <div className="w-16 h-16 sm:w-20 sm:h-20 mx-auto mb-6 sm:mb-8 rounded-xl sm:rounded-2xl bg-gradient-to-br from-slate-800 to-slate-900 border border-slate-700/50 flex items-center justify-center shadow-xl">
                                     <div className="relative">
-                                        <FileText className="w-10 h-10 text-slate-500" />
-                                        <Sparkles className="w-5 h-5 text-emerald-500 absolute -top-1 -right-1 animate-pulse" />
+                                        <FileText className="w-8 h-8 sm:w-10 sm:h-10 text-slate-500" />
+                                        <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 text-emerald-500 absolute -top-1 -right-1 animate-pulse" />
                                     </div>
                                 </div>
 
                                 {/* Title */}
-                                <h3 className="text-2xl font-bold text-white mb-3">
+                                <h3 className="text-xl sm:text-2xl font-bold text-white mb-2 sm:mb-3">
                                     Ready to build your first resume?
                                 </h3>
 
                                 {/* Message */}
-                                <p className="text-slate-400 mb-10 max-w-md mx-auto leading-relaxed">
+                                <p className="text-slate-400 text-sm sm:text-base mb-6 sm:mb-10 max-w-md mx-auto leading-relaxed">
                                     Get started in seconds with our editor or import an existing resume.
-                                    Create stunning developer portfolios that impress recruiters.
                                 </p>
 
                                 {/* CTA Buttons */}
-                                <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+                                <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4">
                                     <button
                                         onClick={handleCreateResume}
                                         disabled={isCreating}
-                                        className="inline-flex items-center gap-2 px-8 py-4 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold rounded-xl transition-all shadow-lg shadow-emerald-500/25 hover:shadow-emerald-500/40 hover:-translate-y-0.5"
+                                        className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 sm:px-8 py-3 sm:py-4 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold rounded-xl transition-all shadow-lg shadow-emerald-500/25 hover:shadow-emerald-500/40 hover:-translate-y-0.5"
                                     >
                                         {isCreating ? (
                                             <Loader2 className="w-5 h-5 animate-spin" />
@@ -478,7 +477,7 @@ export default function DashboardPage() {
                                     </button>
                                     <Link
                                         href="/portfolio/create"
-                                        className="inline-flex items-center gap-2 px-6 py-4 bg-slate-800/50 hover:bg-slate-800 text-white font-medium rounded-xl transition-all border border-slate-700/50 hover:border-emerald-500/30"
+                                        className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 sm:px-6 py-3 sm:py-4 bg-slate-800/50 hover:bg-slate-800 text-white font-medium rounded-xl transition-all border border-slate-700/50 hover:border-emerald-500/30"
                                     >
                                         <Rocket className="w-5 h-5 text-cyan-400" />
                                         Import Resume
@@ -486,14 +485,14 @@ export default function DashboardPage() {
                                 </div>
 
                                 {/* Quick Tips */}
-                                <div className="mt-12 pt-8 border-t border-slate-800/50">
-                                    <p className="text-xs text-slate-500 uppercase tracking-wider mb-4 font-medium">
+                                <div className="mt-8 sm:mt-12 pt-6 sm:pt-8 border-t border-slate-800/50">
+                                    <p className="text-xs text-slate-500 uppercase tracking-wider mb-3 sm:mb-4 font-medium">
                                         What you can do
                                     </p>
-                                    <div className="flex flex-wrap justify-center gap-6 text-sm text-slate-400">
+                                    <div className="flex flex-wrap justify-center gap-3 sm:gap-6 text-xs sm:text-sm text-slate-400">
                                         <span className="flex items-center gap-2">
                                             <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                                            Create multiple resumes
+                                            Multiple resumes
                                         </span>
                                         <span className="flex items-center gap-2">
                                             <span className="w-1.5 h-1.5 rounded-full bg-cyan-500" />
@@ -501,14 +500,14 @@ export default function DashboardPage() {
                                         </span>
                                         <span className="flex items-center gap-2">
                                             <span className="w-1.5 h-1.5 rounded-full bg-indigo-500" />
-                                            Public portfolio page
+                                            Portfolio page
                                         </span>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     ) : (
-                        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                             {resumes.map((resume) => (
                                 <ResumeCard
                                     key={resume._id}
@@ -541,8 +540,8 @@ export default function DashboardPage() {
             </main>
 
             {/* Footer */}
-            <footer className="border-t border-white/5 mt-20 bg-[#020202]">
-                <div className="max-w-7xl mx-auto px-6 py-12 flex flex-col md:flex-row justify-between items-center gap-6">
+            <footer className="border-t border-white/5 mt-12 sm:mt-20 bg-[#020202]">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8 sm:py-12 flex flex-col md:flex-row justify-between items-center gap-4 sm:gap-6">
                     <p className="text-sm text-slate-600">
                         © {new Date().getFullYear()} ConsoleCV. Engineered for developers.
                     </p>

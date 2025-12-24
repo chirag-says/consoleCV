@@ -69,18 +69,18 @@ export function DashboardCard({
     const cardContent = (
         <>
             {/* Top Row */}
-            <div className="flex justify-between items-start mb-6">
-                <div className={`w-14 h-14 rounded-2xl flex items-center justify-center transition-all duration-300 ${styles.icon}`}>
+            <div className="flex justify-between items-start mb-4 sm:mb-6">
+                <div className={`w-11 h-11 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl flex items-center justify-center transition-all duration-300 ${styles.icon}`}>
                     {loading ? (
-                        <div className="w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                        <div className="w-4 h-4 sm:w-5 sm:h-5 border-2 border-current border-t-transparent rounded-full animate-spin" />
                     ) : (
-                        <Icon className="w-7 h-7" />
+                        <Icon className="w-5 h-5 sm:w-7 sm:h-7" />
                     )}
                 </div>
                 {badge && (
                     <span className={`px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider rounded-full border ${variant === 'default' ? 'bg-slate-800 border-slate-700 text-slate-400' :
-                            variant === 'primary' ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400' :
-                                'bg-violet-500/10 border-violet-500/20 text-violet-400'
+                        variant === 'primary' ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400' :
+                            'bg-violet-500/10 border-violet-500/20 text-violet-400'
                         }`}>
                         {badge}
                     </span>
@@ -89,20 +89,20 @@ export function DashboardCard({
 
             {/* Content */}
             <div className="relative z-10">
-                <h3 className={`text-xl font-bold mb-2 transition-colors duration-300 ${styles.title}`}>
+                <h3 className={`text-base sm:text-xl font-bold mb-1.5 sm:mb-2 transition-colors duration-300 ${styles.title}`}>
                     {title}
                 </h3>
-                <p className={`text-sm leading-relaxed transition-colors duration-300 ${styles.description}`}>
+                <p className={`text-xs sm:text-sm leading-relaxed transition-colors duration-300 ${styles.description}`}>
                     {description}
                 </p>
             </div>
 
             {/* Hover Action Indicator */}
-            <div className="mt-8 flex items-center text-xs font-medium uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-2 group-hover:translate-y-0">
+            <div className="mt-4 sm:mt-8 flex items-center text-xs font-medium uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-2 group-hover:translate-y-0">
                 <span className={styles.title}>Open</span>
                 <ArrowRight className={`w-4 h-4 ml-2 transition-transform duration-300 group-hover:translate-x-1 ${variant === 'primary' ? 'text-emerald-400' :
-                        variant === 'gradient' ? 'text-violet-400' :
-                            'text-slate-400'
+                    variant === 'gradient' ? 'text-violet-400' :
+                        'text-slate-400'
                     }`} />
             </div>
 
@@ -112,7 +112,7 @@ export function DashboardCard({
     );
 
     const baseClasses = `
-        group relative p-8 rounded-[2rem] border backdrop-blur-sm transition-all duration-300 overflow-hidden text-left w-full h-full
+        group relative p-5 sm:p-8 rounded-2xl sm:rounded-[2rem] border backdrop-blur-sm transition-all duration-300 overflow-hidden text-left w-full h-full
         ${styles.container}
         ${disabled ? "opacity-50 pointer-events-none grayscale" : "hover:shadow-2xl hover:-translate-y-1"}
     `;
