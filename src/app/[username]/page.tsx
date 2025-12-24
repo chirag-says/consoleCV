@@ -143,7 +143,7 @@ export default function PortfolioPage() {
 
                 if (!res.ok) {
                     if (res.status === 404) {
-                        throw new Error("No public resume found for this username. Make sure you have a resume with your GitHub username set.");
+                        throw new Error("This user doesn't have a public resume yet.");
                     }
                     throw new Error("Failed to load portfolio data.");
                 }

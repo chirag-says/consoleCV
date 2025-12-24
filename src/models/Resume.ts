@@ -9,6 +9,9 @@ export interface IResume extends Omit<ResumeData, "_id" | "userId">, Document {
     userId: mongoose.Types.ObjectId;
     title: string;
     templateId: "latex" | "modern";
+    isPrimary: boolean;
+    isPublic: boolean;
+    slug?: string;
     createdAt: Date;
     updatedAt: Date;
 }
@@ -77,6 +80,19 @@ const ResumeSchema = new Schema<IResume>(
             enum: ["latex", "modern"],
             default: "latex",
         },
+        isPrimary: {
+            type: Boolean,
+            default: false,
+        },
+        isPublic: {
+            type: Boolean,
+            default: false,
+        },
+        slug: {
+            type: String,
+            unique: true,
+            sparse: true, // Allows multiple null values while enforcing uniqueness for non-null
+        },
         personal: { type: PersonalSchema, default: () => ({}) },
         education: { type: [EducationSchema], default: [] },
         experience: { type: [ExperienceSchema], default: [] },
@@ -90,6 +106,10 @@ const ResumeSchema = new Schema<IResume>(
 
 // Compound index for efficient user queries
 ResumeSchema.index({ userId: 1, updatedAt: -1 });
+
+// Index for public resume lookups (isPrimary + isPublic)
+ResumeSchema.index({ userId: 1, isPrimary: -1, isPublic: -1 });
+ResumeSchema.index({ "personal.github": 1 });
 
 // Prevent model recompilation in development
 const Resume: Model<IResume> =

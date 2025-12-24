@@ -24,6 +24,8 @@ import {
     Command,
     Pencil,
     Rocket,
+    AlertCircle,
+    Settings,
 } from "lucide-react";
 import type { ResumeData } from "@/types/resume";
 import { DashboardCard } from "@/components/dashboard";
@@ -185,18 +187,23 @@ export default function DashboardPage() {
     const [resumes, setResumes] = useState<ResumeData[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [isCreating, setIsCreating] = useState(false);
+    const [error, setError] = useState<string | null>(null);
 
     // Fetch resumes
     useEffect(() => {
         const fetchResumes = async () => {
             try {
                 const res = await fetch("/api/resume");
-                if (res.ok) {
-                    const data = await res.json();
-                    setResumes(data.data);
+                const data = await res.json();
+
+                if (!res.ok || !data.success) {
+                    throw new Error(data.error || "Failed to fetch resumes");
                 }
+
+                setResumes(data.data);
             } catch (error) {
                 console.error("Failed to fetch resumes:", error);
+                setError(error instanceof Error ? error.message : "Failed to load resumes");
             } finally {
                 setIsLoading(false);
             }
@@ -305,6 +312,13 @@ export default function DashboardPage() {
                                 <span className="text-sm font-medium text-slate-400 hidden sm:block">
                                     {session?.user?.email}
                                 </span>
+                                <Link
+                                    href="/dashboard/settings"
+                                    className="p-2 text-slate-400 hover:text-white hover:bg-white/5 rounded-lg transition-colors"
+                                    title="Settings"
+                                >
+                                    <Settings className="w-5 h-5" />
+                                </Link>
                                 <button
                                     onClick={() => signOut({ callbackUrl: "/" })}
                                     className="p-2 text-slate-400 hover:text-white hover:bg-white/5 rounded-lg transition-colors"
@@ -386,6 +400,20 @@ export default function DashboardPage() {
                         />
                     </div>
                 </section>
+
+                {/* Error Banner */}
+                {error && (
+                    <div className="mb-8 p-4 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 flex items-center gap-3">
+                        <AlertCircle className="w-5 h-5" />
+                        {error}
+                        <button
+                            onClick={() => setError(null)}
+                            className="ml-auto text-sm hover:text-rose-300 transition-colors"
+                        >
+                            Dismiss
+                        </button>
+                    </div>
+                )}
 
                 {/* Resumes Section */}
                 <section>

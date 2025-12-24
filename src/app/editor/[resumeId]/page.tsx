@@ -17,6 +17,8 @@ import {
     Loader2,
     ArrowLeft,
     Target,
+    AlertCircle,
+    Github,
 } from "lucide-react";
 import type { ResumeData, TemplateId } from "@/types/resume";
 import { defaultResumeData } from "@/types/resume";
@@ -29,6 +31,8 @@ import {
     TemplateSelector,
     AtsAnalyzer,
 } from "@/components/editor";
+import GitHubImporter from "@/components/editor/GitHubImporter";
+import type { Project } from "@/types/resume";
 
 // Dynamically import PDF components to avoid SSR issues
 const PdfPreview = dynamic(
@@ -107,20 +111,23 @@ export default function EditorPage() {
     const [isLoading, setIsLoading] = useState(true);
     const [saveMessage, setSaveMessage] = useState<string | null>(null);
     const [isAtsOpen, setIsAtsOpen] = useState(false);
+    const [isGitHubImporterOpen, setIsGitHubImporterOpen] = useState(false);
+    const [error, setError] = useState<string | null>(null);
 
     // Fetch resume data
     useEffect(() => {
         const fetchResume = async () => {
             try {
                 const res = await fetch(`/api/resume/${resumeId}`);
-                if (!res.ok) {
-                    throw new Error("Failed to fetch resume");
-                }
                 const data = await res.json();
+
+                if (!res.ok || !data.success) {
+                    throw new Error(data.error || "Failed to fetch resume");
+                }
                 setResumeData(data.data);
             } catch (error) {
                 console.error("Error loading resume:", error);
-                router.push("/dashboard");
+                setError(error instanceof Error ? error.message : "Failed to load resume");
             } finally {
                 setIsLoading(false);
             }
@@ -129,7 +136,7 @@ export default function EditorPage() {
         if (resumeId) {
             fetchResume();
         }
-    }, [resumeId, router]);
+    }, [resumeId]);
 
     // Update handlers for each section
     const updatePersonal = (personal: ResumeData["personal"]) => {
@@ -190,6 +197,27 @@ export default function EditorPage() {
         );
     }
 
+    if (error) {
+        return (
+            <div className="min-h-screen bg-slate-950 flex items-center justify-center">
+                <div className="text-center max-w-md px-6">
+                    <div className="w-16 h-16 bg-rose-500/10 rounded-2xl flex items-center justify-center border border-rose-500/20 mx-auto mb-6">
+                        <AlertCircle className="w-8 h-8 text-rose-500" />
+                    </div>
+                    <h2 className="text-xl font-bold text-white mb-2">Unable to Load Resume</h2>
+                    <p className="text-slate-400 mb-8">{error}</p>
+                    <Link
+                        href="/dashboard"
+                        className="inline-flex items-center gap-2 px-6 py-3 bg-white/10 hover:bg-white/20 text-white font-medium rounded-xl transition-all"
+                    >
+                        <ArrowLeft className="w-4 h-4" />
+                        Back to Dashboard
+                    </Link>
+                </div>
+            </div>
+        );
+    }
+
     return (
         <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
             {/* Header */}
@@ -240,6 +268,13 @@ export default function EditorPage() {
                             >
                                 <Target className="w-4 h-4" />
                                 ATS Check
+                            </button>
+                            <button
+                                onClick={() => setIsGitHubImporterOpen(true)}
+                                className="flex items-center gap-2 px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white font-medium rounded-lg transition-colors border border-slate-700"
+                            >
+                                <Github className="w-4 h-4" />
+                                Import
                             </button>
                             <button
                                 onClick={handleSave}
@@ -376,6 +411,20 @@ export default function EditorPage() {
                         userId: prev.userId,
                         title: prev.title || importedData.personal?.fullName || "Imported Resume",
                         templateId: prev.templateId,
+                    }));
+                }}
+            />
+
+            {/* GitHub Importer Modal */}
+            <GitHubImporter
+                isOpen={isGitHubImporterOpen}
+                onClose={() => setIsGitHubImporterOpen(false)}
+                defaultUsername={resumeData.personal?.github || ""}
+                onImport={(projects: Project[]) => {
+                    // Append imported projects to existing projects
+                    setResumeData((prev) => ({
+                        ...prev,
+                        projects: [...prev.projects, ...projects],
                     }));
                 }}
             />

@@ -24,6 +24,18 @@ interface RepoAnalysis {
     fallbackDescription: string;
 }
 
+// GitHub API error response
+export interface GitHubError {
+    message: string;
+    isRateLimited: boolean;
+    requiresAuth: boolean;
+}
+
+// Options for GitHub API calls
+interface GitHubApiOptions {
+    githubPat?: string;
+}
+
 // =============================================================================
 // FRAMEWORK DETECTION MAPPINGS
 // =============================================================================
@@ -152,22 +164,47 @@ const RUST_FRAMEWORK_KEYWORDS: Record<string, string> = {
 const GITHUB_API_BASE = "https://api.github.com";
 
 /**
- * Fetches data from GitHub API with proper headers
+ * Creates authorization headers for GitHub API requests
+ * Prioritizes user PAT over server-level token
  */
-async function fetchGitHubAPI<T>(endpoint: string): Promise<T | null> {
+function getAuthHeaders(options?: GitHubApiOptions): Record<string, string> {
+    const headers: Record<string, string> = {
+        Accept: "application/vnd.github.v3+json",
+    };
+
+    // Priority: User PAT > Server token > No auth
+    if (options?.githubPat) {
+        headers.Authorization = `Bearer ${options.githubPat}`;
+    } else if (process.env.GITHUB_TOKEN) {
+        headers.Authorization = `token ${process.env.GITHUB_TOKEN}`;
+    }
+
+    return headers;
+}
+
+/**
+ * Fetches data from GitHub API with proper headers
+ * @param endpoint - API endpoint (e.g., /users/octocat/repos)
+ * @param options - Optional configuration including githubPat
+ */
+async function fetchGitHubAPI<T>(
+    endpoint: string,
+    options?: GitHubApiOptions
+): Promise<T | null> {
     try {
         const response = await fetch(`${GITHUB_API_BASE}${endpoint}`, {
-            headers: {
-                Accept: "application/vnd.github.v3+json",
-                // Add token if available for higher rate limits
-                ...(process.env.GITHUB_TOKEN && {
-                    Authorization: `token ${process.env.GITHUB_TOKEN}`,
-                }),
-            },
+            headers: getAuthHeaders(options),
             next: { revalidate: 3600 }, // Cache for 1 hour
         });
 
         if (!response.ok) {
+            // Log rate limit info for debugging
+            if (response.status === 403 || response.status === 429) {
+                const remaining = response.headers.get("x-ratelimit-remaining");
+                console.warn(
+                    `[GitHub API] Rate limit issue on ${endpoint}. Remaining: ${remaining}`
+                );
+            }
             return null;
         }
 
@@ -583,20 +620,17 @@ function generateDescription(analysis: RepoAnalysis): string {
  * Filters out forks and sorts by stars
  * @param username - GitHub username
  * @param limit - Maximum number of repos to fetch (default: 6)
+ * @param githubPat - Optional user's GitHub Personal Access Token for authenticated requests
  */
 export async function fetchGitHubRepos(
     username: string,
-    limit: number = 6
+    limit: number = 6,
+    githubPat?: string
 ): Promise<GitHubRepo[]> {
     const response = await fetch(
         `${GITHUB_API_BASE}/users/${username}/repos?sort=stars&per_page=100`,
         {
-            headers: {
-                Accept: "application/vnd.github.v3+json",
-                ...(process.env.GITHUB_TOKEN && {
-                    Authorization: `token ${process.env.GITHUB_TOKEN}`,
-                }),
-            },
+            headers: getAuthHeaders({ githubPat }),
             next: { revalidate: 3600 },
         }
     );
@@ -605,10 +639,16 @@ export async function fetchGitHubRepos(
         if (response.status === 404) {
             throw new Error(`GitHub user "${username}" not found`);
         }
-        if (response.status === 403) {
-            throw new Error(
-                "GitHub API rate limit exceeded. Please try again later."
-            );
+        if (response.status === 403 || response.status === 429) {
+            const isAuthenticated = !!githubPat || !!process.env.GITHUB_TOKEN;
+            const errorMessage = isAuthenticated
+                ? "GitHub API rate limit exceeded. Please try again in a few minutes."
+                : "GitHub API rate limit exceeded. Add a Personal Access Token in Settings to increase your rate limit.";
+
+            const error = new Error(errorMessage) as Error & { isRateLimited: boolean; requiresAuth: boolean };
+            error.isRateLimited = true;
+            error.requiresAuth = !isAuthenticated;
+            throw error;
         }
         throw new Error(`Failed to fetch GitHub repos: ${response.statusText}`);
     }
@@ -737,13 +777,15 @@ export function mapReposToProjects(repos: GitHubRepo[]): Project[] {
  * Fetches repos and analyzes their structure to generate resume-quality descriptions
  * @param username - GitHub username
  * @param limit - Maximum number of projects to return (default: 6)
+ * @param githubPat - Optional user's GitHub Personal Access Token for authenticated requests
  */
 export async function importGitHubProjects(
     username: string,
-    limit: number = 6
+    limit: number = 6,
+    githubPat?: string
 ): Promise<Project[]> {
-    // Fetch repositories
-    const repos = await fetchGitHubRepos(username, limit);
+    // Fetch repositories (with optional auth)
+    const repos = await fetchGitHubRepos(username, limit, githubPat);
 
     if (repos.length === 0) {
         return [];

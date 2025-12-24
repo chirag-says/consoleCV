@@ -1,10 +1,10 @@
 "use client";
 
 // InternDeck - Projects Form Component
-// Manages project entries with GitHub import functionality
+// Manages project entries with GitHub import and AI bullet generation
 
 import React, { useState } from "react";
-import { FolderGit2, Plus, Trash2, Github, Loader2, X } from "lucide-react";
+import { FolderGit2, Plus, Trash2, Github, Loader2, X, Sparkles, Check, AlertCircle } from "lucide-react";
 import type { Project } from "@/types/resume";
 import { importGitHubProjects } from "@/lib/github";
 import SmartTextarea from "@/components/ui/SmartTextarea";
@@ -31,6 +31,11 @@ export default function ProjectsForm({
     const [importError, setImportError] = useState<string | null>(null);
     const [showImportModal, setShowImportModal] = useState(false);
     const [importUsername, setImportUsername] = useState(githubUsername || "");
+
+    // AI bullet generation state
+    const [aiLoadingIndex, setAiLoadingIndex] = useState<number | null>(null);
+    const [aiSuggestions, setAiSuggestions] = useState<{ index: number; bullets: string[] } | null>(null);
+    const [aiError, setAiError] = useState<string | null>(null);
 
     const addProject = () => {
         onChange([...data, { ...emptyProject }]);
@@ -84,6 +89,63 @@ export default function ProjectsForm({
         } finally {
             setIsImporting(false);
         }
+    };
+
+    // Generate AI bullet suggestions for a project
+    const handleGenerateBullets = async (index: number) => {
+        const project = data[index];
+
+        if (!project.techStack.length && !project.description && !project.title) {
+            setAiError("Add some project details (title, tech stack, or description) to generate bullets.");
+            return;
+        }
+
+        setAiLoadingIndex(index);
+        setAiError(null);
+        setAiSuggestions(null);
+
+        try {
+            const response = await fetch("/api/ai/suggest-bullets", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    techStack: project.techStack.join(", "),
+                    projectDescription: project.description || project.title,
+                    numBullets: 3,
+                }),
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.error || "Failed to generate suggestions");
+            }
+
+            setAiSuggestions({ index, bullets: data.bullets });
+        } catch (error) {
+            setAiError(
+                error instanceof Error ? error.message : "Failed to generate suggestions"
+            );
+        } finally {
+            setAiLoadingIndex(null);
+        }
+    };
+
+    // Add a single AI-generated bullet to the project
+    const addBulletToProject = (projectIndex: number, bullet: string) => {
+        const project = data[projectIndex];
+        const currentDesc = project.description.trim();
+        const newDesc = currentDesc
+            ? `${currentDesc}\n• ${bullet}`
+            : `• ${bullet}`;
+        updateProject(projectIndex, "description", newDesc);
+    };
+
+    // Replace all bullets with AI suggestions
+    const replaceBullets = (projectIndex: number, bullets: string[]) => {
+        const newDesc = bullets.map(b => `• ${b}`).join("\n");
+        updateProject(projectIndex, "description", newDesc);
+        setAiSuggestions(null);
     };
 
     return (
@@ -269,9 +331,29 @@ export default function ProjectsForm({
 
                             {/* Description */}
                             <div className="space-y-1">
-                                <label className="block text-xs font-medium text-slate-400">
-                                    Description
-                                </label>
+                                <div className="flex items-center justify-between">
+                                    <label className="block text-xs font-medium text-slate-400">
+                                        Description
+                                    </label>
+                                    <button
+                                        onClick={() => handleGenerateBullets(index)}
+                                        disabled={aiLoadingIndex !== null}
+                                        className="flex items-center gap-1 px-2 py-1 text-xs font-medium text-violet-400 hover:text-violet-300 hover:bg-violet-500/10 rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                                        title="Generate Smart Bullets with AI"
+                                    >
+                                        {aiLoadingIndex === index ? (
+                                            <>
+                                                <Loader2 className="w-3 h-3 animate-spin" />
+                                                Generating...
+                                            </>
+                                        ) : (
+                                            <>
+                                                <Sparkles className="w-3 h-3" />
+                                                Smart Bullets
+                                            </>
+                                        )}
+                                    </button>
+                                </div>
                                 <SmartTextarea
                                     value={project.description}
                                     onChange={(value) =>
@@ -280,6 +362,58 @@ export default function ProjectsForm({
                                     placeholder="• Describe what the project does..."
                                     rows={3}
                                 />
+
+                                {/* AI Error */}
+                                {aiError && aiLoadingIndex === null && aiSuggestions === null && (
+                                    <div className="flex items-center gap-2 px-3 py-2 mt-2 rounded-lg bg-rose-500/10 border border-rose-500/20 text-rose-400 text-xs">
+                                        <AlertCircle className="w-3.5 h-3.5 flex-shrink-0" />
+                                        {aiError}
+                                    </div>
+                                )}
+
+                                {/* AI Suggestions Panel */}
+                                {aiSuggestions && aiSuggestions.index === index && (
+                                    <div className="mt-2 p-3 rounded-lg bg-violet-500/10 border border-violet-500/20">
+                                        <div className="flex items-center justify-between mb-2">
+                                            <span className="text-xs font-medium text-violet-400 flex items-center gap-1">
+                                                <Sparkles className="w-3 h-3" />
+                                                AI Suggestions
+                                            </span>
+                                            <button
+                                                onClick={() => setAiSuggestions(null)}
+                                                className="p-1 text-slate-400 hover:text-white rounded transition-colors"
+                                            >
+                                                <X className="w-3.5 h-3.5" />
+                                            </button>
+                                        </div>
+                                        <div className="space-y-2">
+                                            {aiSuggestions.bullets.map((bullet, bulletIndex) => (
+                                                <div
+                                                    key={bulletIndex}
+                                                    className="flex items-start gap-2 p-2 bg-slate-800/50 rounded-lg group"
+                                                >
+                                                    <p className="flex-1 text-xs text-slate-300">
+                                                        • {bullet}
+                                                    </p>
+                                                    <button
+                                                        onClick={() => addBulletToProject(index, bullet)}
+                                                        className="flex items-center gap-1 px-2 py-1 text-xs font-medium text-emerald-400 hover:text-emerald-300 hover:bg-emerald-500/10 rounded opacity-0 group-hover:opacity-100 transition-all"
+                                                    >
+                                                        <Plus className="w-3 h-3" />
+                                                        Add
+                                                    </button>
+                                                </div>
+                                            ))}
+                                        </div>
+                                        <button
+                                            onClick={() => replaceBullets(index, aiSuggestions.bullets)}
+                                            className="w-full mt-3 flex items-center justify-center gap-1 px-3 py-2 text-xs font-medium text-violet-300 bg-violet-500/20 hover:bg-violet-500/30 rounded-lg transition-all"
+                                        >
+                                            <Check className="w-3 h-3" />
+                                            Replace All Bullets
+                                        </button>
+                                    </div>
+                                )}
                             </div>
                         </div>
                     ))}

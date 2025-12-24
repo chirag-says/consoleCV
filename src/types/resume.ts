@@ -39,6 +39,9 @@ export interface ResumeData {
     userId?: string;
     title?: string;
     templateId?: TemplateId;
+    isPrimary?: boolean;
+    isPublic?: boolean;
+    slug?: string;
     personal: PersonalInfo;
     education: Education[];
     experience: Experience[];

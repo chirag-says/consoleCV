@@ -70,7 +70,7 @@ export async function GET(request: NextRequest) {
         await dbConnect();
 
         const resumes = await Resume.find({ userId: session.user.id })
-            .select("_id title personal.fullName updatedAt createdAt")
+            .select("_id title personal.fullName isPrimary isPublic slug updatedAt createdAt")
             .sort({ updatedAt: -1 })
             .lean();
 
@@ -193,10 +193,16 @@ export async function POST(request: NextRequest) {
 
         await dbConnect();
 
+        // Check if this is the user's first resume - if so, make it primary
+        const existingResumeCount = await Resume.countDocuments({ userId: session.user.id });
+        const isFirstResume = existingResumeCount === 0;
+
         // Create resume with validated data and authenticated user's ID
         const resume = await Resume.create({
             ...validationResult.data,
             userId: session.user.id, // Force userId from session
+            isPrimary: isFirstResume, // First resume is automatically primary
+            isPublic: false, // Default to private
         });
 
         // Audit log the creation
@@ -233,3 +239,146 @@ export async function POST(request: NextRequest) {
     }
 }
 
+// PATCH - Update resume settings (isPrimary, isPublic, slug) for a specific resume
+export async function PATCH(request: NextRequest) {
+    const ipAddress = getClientIp(request);
+    const userAgent = request.headers.get("user-agent") || "Unknown";
+
+    try {
+        const session = await auth();
+
+        if (!session?.user?.id) {
+            try {
+                await dbConnect();
+                await AuditLog.log("UNAUTHORIZED_ACCESS", {
+                    ipAddress,
+                    userAgent,
+                    details: {
+                        endpoint: "/api/resume",
+                        method: "PATCH",
+                    },
+                    severity: "HIGH",
+                });
+            } catch {
+                // Don't fail if audit logging fails
+            }
+
+            return NextResponse.json(
+                { success: false, error: "Unauthorized" },
+                { status: 401 }
+            );
+        }
+
+        // Rate limiting
+        const rateLimitResult = await rateLimitAuthenticated(session.user.id);
+
+        if (!rateLimitResult.success) {
+            return rateLimitExceededResponse(rateLimitResult);
+        }
+
+        // Parse request body
+        let body: { resumeId?: string; isPrimary?: boolean; isPublic?: boolean; slug?: string };
+        try {
+            body = await request.json();
+        } catch {
+            return NextResponse.json(
+                { success: false, error: "Invalid request body" },
+                { status: 400 }
+            );
+        }
+
+        // Validate resumeId
+        const { resumeId, isPrimary, isPublic, slug } = body;
+        if (!resumeId || !/^[a-fA-F0-9]{24}$/.test(resumeId)) {
+            return NextResponse.json(
+                { success: false, error: "Invalid or missing resumeId" },
+                { status: 400 }
+            );
+        }
+
+        await dbConnect();
+
+        // Verify ownership
+        const resume = await Resume.findOne({
+            _id: resumeId,
+            userId: session.user.id,
+        });
+
+        if (!resume) {
+            return NextResponse.json(
+                { success: false, error: "Resume not found" },
+                { status: 404 }
+            );
+        }
+
+        // Build update object
+        const updateFields: { isPrimary?: boolean; isPublic?: boolean; slug?: string } = {};
+
+        // Handle isPrimary - ensure only one primary per user
+        if (typeof isPrimary === "boolean") {
+            if (isPrimary) {
+                // Set all other resumes for this user to isPrimary: false
+                await Resume.updateMany(
+                    { userId: session.user.id, _id: { $ne: resumeId } },
+                    { $set: { isPrimary: false } }
+                );
+            }
+            updateFields.isPrimary = isPrimary;
+        }
+
+        // Handle isPublic
+        if (typeof isPublic === "boolean") {
+            updateFields.isPublic = isPublic;
+        }
+
+        // Handle slug
+        if (typeof slug === "string") {
+            // Validate slug format
+            if (slug && !/^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$/.test(slug)) {
+                return NextResponse.json(
+                    { success: false, error: "Invalid slug format" },
+                    { status: 400 }
+                );
+            }
+            updateFields.slug = slug || undefined;
+        }
+
+        // Update the resume
+        const updatedResume = await Resume.findByIdAndUpdate(
+            resumeId,
+            { $set: updateFields },
+            { new: true }
+        );
+
+        // Audit log
+        await AuditLog.log("RESUME_UPDATED", {
+            userId: session.user.id,
+            ipAddress,
+            userAgent,
+            details: {
+                resourceId: resumeId,
+                resourceType: "Resume",
+                updatedFields: Object.keys(updateFields),
+            },
+            severity: "LOW",
+        });
+
+        const response = NextResponse.json(
+            { success: true, data: updatedResume },
+            { status: 200 }
+        );
+
+        const rateLimitHeaders = createRateLimitHeaders(rateLimitResult);
+        rateLimitHeaders.forEach((value, key) => {
+            response.headers.set(key, value);
+        });
+
+        return response;
+    } catch (error) {
+        console.error("Error updating resume settings:", error);
+        return NextResponse.json(
+            { success: false, error: "Failed to update resume settings" },
+            { status: 500 }
+        );
+    }
+}

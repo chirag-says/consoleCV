@@ -71,6 +71,8 @@ const nextConfig = {
                             "connect-src 'self' https://api.github.com https://raw.githubusercontent.com https://vercel.live https://*.vercel.com wss://*.vercel.com https://vitals.vercel-insights.com",
                             // Frames: same origin and blob: (needed for @react-pdf/renderer PDFViewer)
                             "frame-src 'self' blob:",
+                            // Workers: needed for PDF.js
+                            "worker-src 'self' blob:",
                             // Form submissions: same origin only
                             "form-action 'self'",
                             // Base URI: same origin only

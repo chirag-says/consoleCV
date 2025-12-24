@@ -8,6 +8,7 @@ export interface IUser extends Document {
     name: string;
     email: string;
     password: string;
+    githubPatEncrypted?: string; // Encrypted GitHub Personal Access Token
     createdAt: Date;
     updatedAt: Date;
 }
@@ -32,6 +33,11 @@ const UserSchema = new Schema<IUser>(
             type: String,
             required: [true, "Password is required"],
             minlength: [6, "Password must be at least 6 characters"],
+        },
+        githubPatEncrypted: {
+            type: String,
+            required: false,
+            select: false, // Don't return this field by default in queries
         },
     },
     {

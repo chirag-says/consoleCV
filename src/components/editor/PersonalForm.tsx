@@ -3,19 +3,49 @@
 // InternDeck - Personal Information Form Component
 // Collects basic contact and profile information
 
-import React from "react";
+import React, { useEffect } from "react";
 import { User, Mail, Github, Linkedin, Phone } from "lucide-react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import type { PersonalInfo } from "@/types/resume";
+import { personalInfoSchema } from "@/lib/validations";
+
+import { z } from "zod";
 
 interface PersonalFormProps {
     data: PersonalInfo;
     onChange: (data: PersonalInfo) => void;
 }
 
+type PersonalFormValues = z.infer<typeof personalInfoSchema>;
+
 export default function PersonalForm({ data, onChange }: PersonalFormProps) {
-    const handleChange = (field: keyof PersonalInfo, value: string) => {
-        onChange({ ...data, [field]: value });
-    };
+    const {
+        register,
+        formState: { errors },
+        watch,
+        reset,
+    } = useForm<PersonalFormValues>({
+        resolver: zodResolver(personalInfoSchema) as any,
+        defaultValues: data,
+        mode: "onChange",
+    });
+
+    // Update parent when form values change
+    useEffect(() => {
+        const subscription = watch((value) => {
+            // value might differ slightly in types (undefined vs string), cast as needed
+            onChange(value as PersonalInfo);
+        });
+        return () => subscription.unsubscribe();
+    }, [watch, onChange]);
+
+    // Update form if initial data changes (e.g. loaded from API)
+    useEffect(() => {
+        if (data) {
+            reset(data);
+        }
+    }, [data, reset]);
 
     return (
         <div className="space-y-4">
@@ -33,12 +63,15 @@ export default function PersonalForm({ data, onChange }: PersonalFormProps) {
                     <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                     <input
                         type="text"
-                        value={data.fullName}
-                        onChange={(e) => handleChange("fullName", e.target.value)}
+                        {...register("fullName")}
                         placeholder="John Doe"
-                        className="w-full pl-10 pr-4 py-3 bg-slate-800/50 border border-slate-700 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all"
+                        className={`w-full pl-10 pr-4 py-3 bg-slate-800/50 border rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all ${errors.fullName ? "border-red-500/50" : "border-slate-700"
+                            }`}
                     />
                 </div>
+                {errors.fullName && (
+                    <p className="text-red-400 text-xs">{errors.fullName.message}</p>
+                )}
             </div>
 
             {/* Email */}
@@ -50,12 +83,15 @@ export default function PersonalForm({ data, onChange }: PersonalFormProps) {
                     <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                     <input
                         type="email"
-                        value={data.email}
-                        onChange={(e) => handleChange("email", e.target.value)}
+                        {...register("email")}
                         placeholder="john@example.com"
-                        className="w-full pl-10 pr-4 py-3 bg-slate-800/50 border border-slate-700 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all"
+                        className={`w-full pl-10 pr-4 py-3 bg-slate-800/50 border rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all ${errors.email ? "border-red-500/50" : "border-slate-700"
+                            }`}
                     />
                 </div>
+                {errors.email && (
+                    <p className="text-red-400 text-xs">{errors.email.message}</p>
+                )}
             </div>
 
             {/* Phone */}
@@ -67,12 +103,15 @@ export default function PersonalForm({ data, onChange }: PersonalFormProps) {
                     <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                     <input
                         type="tel"
-                        value={data.phone}
-                        onChange={(e) => handleChange("phone", e.target.value)}
+                        {...register("phone")}
                         placeholder="+1 (555) 123-4567"
-                        className="w-full pl-10 pr-4 py-3 bg-slate-800/50 border border-slate-700 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all"
+                        className={`w-full pl-10 pr-4 py-3 bg-slate-800/50 border rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all ${errors.phone ? "border-red-500/50" : "border-slate-700"
+                            }`}
                     />
                 </div>
+                {errors.phone && (
+                    <p className="text-red-400 text-xs">{errors.phone.message}</p>
+                )}
             </div>
 
             {/* GitHub */}
@@ -84,12 +123,15 @@ export default function PersonalForm({ data, onChange }: PersonalFormProps) {
                     <Github className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                     <input
                         type="text"
-                        value={data.github}
-                        onChange={(e) => handleChange("github", e.target.value)}
+                        {...register("github")}
                         placeholder="johndoe"
-                        className="w-full pl-10 pr-4 py-3 bg-slate-800/50 border border-slate-700 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all"
+                        className={`w-full pl-10 pr-4 py-3 bg-slate-800/50 border rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all ${errors.github ? "border-red-500/50" : "border-slate-700"
+                            }`}
                     />
                 </div>
+                {errors.github && (
+                    <p className="text-red-400 text-xs">{errors.github.message}</p>
+                )}
             </div>
 
             {/* LinkedIn */}
@@ -101,12 +143,15 @@ export default function PersonalForm({ data, onChange }: PersonalFormProps) {
                     <Linkedin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                     <input
                         type="url"
-                        value={data.linkedin}
-                        onChange={(e) => handleChange("linkedin", e.target.value)}
+                        {...register("linkedin")}
                         placeholder="https://linkedin.com/in/johndoe"
-                        className="w-full pl-10 pr-4 py-3 bg-slate-800/50 border border-slate-700 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all"
+                        className={`w-full pl-10 pr-4 py-3 bg-slate-800/50 border rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all ${errors.linkedin ? "border-red-500/50" : "border-slate-700"
+                            }`}
                     />
                 </div>
+                {errors.linkedin && (
+                    <p className="text-red-400 text-xs">{errors.linkedin.message}</p>
+                )}
             </div>
         </div>
     );

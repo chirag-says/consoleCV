@@ -201,8 +201,16 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
 
         await dbConnect();
 
-        // Clean the update data - remove protected fields
+        // Clean the update data
         const updateData = { ...validationResult.data };
+
+        // Handle isPrimary - ensure only one primary per user
+        if (updateData.isPrimary === true) {
+            await Resume.updateMany(
+                { userId: session.user.id, _id: { $ne: resumeId } },
+                { $set: { isPrimary: false } }
+            );
+        }
 
         const resume = await Resume.findOneAndUpdate(
             { _id: resumeId, userId: session.user.id },
@@ -248,6 +256,11 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
             { status: 500 }
         );
     }
+}
+
+// PATCH - Partially update a resume (same logic as PUT)
+export async function PATCH(request: NextRequest, { params }: RouteParams) {
+    return PUT(request, { params });
 }
 
 // DELETE - Delete a resume

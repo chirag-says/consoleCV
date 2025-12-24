@@ -106,7 +106,7 @@ export const userLoginSchema = z.object({
 /**
  * Personal Information Schema
  */
-const personalInfoSchema = z.object({
+export const personalInfoSchema = z.object({
     fullName: sanitizedString(100)
         .optional()
         .default("")
@@ -182,6 +182,17 @@ export const resumeSchema = z.object({
     title: sanitizedString(200)
         .optional()
         .default("Untitled Resume"),
+    isPrimary: z.boolean().optional().default(false),
+    isPublic: z.boolean().optional().default(false),
+    slug: z
+        .string()
+        .max(100, "Slug cannot exceed 100 characters")
+        .regex(
+            /^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$/,
+            "Slug must be lowercase, alphanumeric, and can contain hyphens (not at start/end)"
+        )
+        .optional()
+        .or(z.literal("").transform(() => undefined)),
     personal: personalInfoSchema.optional().default({
         fullName: "",
         email: "",

@@ -23,16 +23,18 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
 
         await dbConnect();
 
-        // Find resume where personal.github matches the username
+        // Find resume where personal.github matches the username AND isPublic matches true
+        // Sort by isPrimary (desc) then updatedAt (desc) to prioritize the primary resume
         const resume = await Resume.findOne({
             "personal.github": { $regex: new RegExp(`^${username}$`, "i") },
+            isPublic: true,
         })
-            .sort({ updatedAt: -1 }) // Get the most recently updated one
+            .sort({ isPrimary: -1, updatedAt: -1 })
             .lean();
 
         if (!resume) {
             return NextResponse.json(
-                { success: false, error: "Resume not found" },
+                { success: false, error: "No public resume found for this user", status: 404 },
                 { status: 404 }
             );
         }
