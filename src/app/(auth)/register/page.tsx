@@ -3,20 +3,23 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Terminal, Lock, Mail, User, Loader2, ArrowRight } from "lucide-react";
+import { Terminal, Lock, Mail, User, Loader2, ArrowRight, Eye, EyeOff } from "lucide-react";
 
 export default function RegisterPage() {
     const router = useRouter();
     const [name, setName] = useState("");
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
+    const [showPassword, setShowPassword] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState("");
+    const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsLoading(true);
         setError("");
+        setFieldErrors({});
 
         try {
             const response = await fetch("/api/auth/register", {
@@ -28,6 +31,10 @@ export default function RegisterPage() {
             const data = await response.json();
 
             if (!response.ok) {
+                // Handle field-specific errors
+                if (data.details) {
+                    setFieldErrors(data.details);
+                }
                 throw new Error(data.error || "Registration failed");
             }
 
@@ -67,10 +74,13 @@ export default function RegisterPage() {
                                     required
                                     value={name}
                                     onChange={(e) => setName(e.target.value)}
-                                    className="w-full pl-10 pr-4 py-3 bg-slate-950 border border-slate-800 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 transition-all"
+                                    className={`w-full pl-10 pr-4 py-3 bg-slate-950 border ${fieldErrors.name ? 'border-red-500/50 focus:border-red-500' : 'border-slate-800 focus:border-emerald-500'} rounded-lg text-white placeholder-slate-500 focus:outline-none focus:ring-2 ${fieldErrors.name ? 'focus:ring-red-500/20' : 'focus:ring-emerald-500/50'} transition-all`}
                                     placeholder="John Doe"
                                 />
                             </div>
+                            {fieldErrors.name && (
+                                <p className="text-xs text-red-400 mt-1">{fieldErrors.name}</p>
+                            )}
                         </div>
 
                         <div className="space-y-2">
@@ -82,10 +92,13 @@ export default function RegisterPage() {
                                     required
                                     value={email}
                                     onChange={(e) => setEmail(e.target.value)}
-                                    className="w-full pl-10 pr-4 py-3 bg-slate-950 border border-slate-800 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 transition-all"
+                                    className={`w-full pl-10 pr-4 py-3 bg-slate-950 border ${fieldErrors.email ? 'border-red-500/50 focus:border-red-500' : 'border-slate-800 focus:border-emerald-500'} rounded-lg text-white placeholder-slate-500 focus:outline-none focus:ring-2 ${fieldErrors.email ? 'focus:ring-red-500/20' : 'focus:ring-emerald-500/50'} transition-all`}
                                     placeholder="you@example.com"
                                 />
                             </div>
+                            {fieldErrors.email && (
+                                <p className="text-xs text-red-400 mt-1">{fieldErrors.email}</p>
+                            )}
                         </div>
 
                         <div className="space-y-2">
@@ -93,15 +106,29 @@ export default function RegisterPage() {
                             <div className="relative">
                                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
                                 <input
-                                    type="password"
+                                    type={showPassword ? "text" : "password"}
                                     required
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}
-                                    className="w-full pl-10 pr-4 py-3 bg-slate-950 border border-slate-800 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 transition-all"
+                                    className={`w-full pl-10 pr-12 py-3 bg-slate-950 border ${fieldErrors.password ? 'border-red-500/50 focus:border-red-500' : 'border-slate-800 focus:border-emerald-500'} rounded-lg text-white placeholder-slate-500 focus:outline-none focus:ring-2 ${fieldErrors.password ? 'focus:ring-red-500/20' : 'focus:ring-emerald-500/50'} transition-all`}
                                     placeholder="At least 6 characters"
                                     minLength={6}
                                 />
+                                <button
+                                    type="button"
+                                    onClick={() => setShowPassword(!showPassword)}
+                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 transition-colors"
+                                >
+                                    {showPassword ? (
+                                        <EyeOff className="w-4 h-4" />
+                                    ) : (
+                                        <Eye className="w-4 h-4" />
+                                    )}
+                                </button>
                             </div>
+                            {fieldErrors.password && (
+                                <p className="text-xs text-red-400 mt-1">{fieldErrors.password}</p>
+                            )}
                         </div>
 
                         {error && (

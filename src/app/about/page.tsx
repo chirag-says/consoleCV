@@ -206,9 +206,9 @@ export default function AboutPage() {
                     <div className="max-w-6xl mx-auto px-4 sm:px-6 py-16 sm:py-20">
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
                             <StatCard value="40%" icon={Zap} label="Latency Optimized" />
-                            <StatCard value="10K+" icon={Database} label="Data Points/Day" />
-                            <StatCard value="99.5%" icon={Shield} label="Uptime Achieved" />
-                            <StatCard value="8.5" icon={Sparkles} label="CGPA" />
+                            <StatCard value="500+" icon={Database} label="Resumes Generated" />
+                            <StatCard value="99.9%" icon={Shield} label="Uptime Achieved" />
+                            <StatCard value="100%" icon={Sparkles} label="Open Source" />
                         </div>
                     </div>
                 </section>

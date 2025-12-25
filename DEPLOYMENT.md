@@ -46,6 +46,7 @@ In the Vercel project settings, navigate to **Settings** → **Environment Varia
 | `AUTH_SECRET`              | NextAuth.js secret (min 32 chars)               | `your-random-secret-key-at-least-32-characters`  |
 | `GITHUB_PAT_ENCRYPTION_KEY`| Encryption key for GitHub PAT storage           | `your-encryption-key-32-chars`                   |
 | `GROQ_API_KEY`             | Groq API key for AI features                    | `gsk_your_groq_api_key`                          |
+| `AUTH_TRUST_HOST`          | Trust Vercel's proxy (Required)                 | `true`                                           |
 | `NEXTAUTH_URL`             | Your production URL                             | `https://consolecv.vercel.app`                   |
 | `GITHUB_ID` (optional)     | GitHub OAuth App Client ID                      | `Ov23li...`                                      |
 | `GITHUB_SECRET` (optional) | GitHub OAuth App Client Secret                  | `github_oauth_secret`                            |
@@ -101,19 +102,43 @@ Vercel auto-detects Next.js settings, but verify these if needed:
 
 ---
 
-## Post-Deployment Checklist
+## 5. Post-Deployment Checklist
 
-- [ ] Test user registration/login flow
-- [ ] Create a resume and verify it saves to database
-- [ ] Test PDF export functionality
-- [ ] Upload a resume PDF and test AI parsing
-- [ ] Set a resume as public and verify portfolio page loads
+- [ ] **Verify Authentication**: Try logging in with GitHub and Credentials.
+- [ ] **Test Database**: Create a new resume to verify MongoDB write access.
+- [ ] **Check Mobile View**: Ensure the dashboard looks good on your phone.
+- [ ] **Test Sharing**: Send your public profile link to a friend (e.g., `https://your-app.vercel.app/username`).
+
+## 6. Troubleshooting Common Issues
+
+### "My friends can't create an account" (MongoDB Connection Error)
+If sign-up works locally but fails on Vercel, it is 99% likely a **Network Access** issue in MongoDB Atlas.
+
+**The Fix:**
+1. Log in to [MongoDB Atlas](https://cloud.mongodb.com).
+2. Go to **Network Access** in the left sidebar.
+3. Click **Add IP Address**.
+4. Select **Allow Access from Anywhere** (0.0.0.0/0).
+5. Click **Confirm**.
+   - *Reason: Vercel uses dynamic IP addresses, so you cannot whitelist a single IP. You must allow all connections.*
+
+### 500 Internal Server Error
+Check your Vercel Logs:
+1. Go to your Vercel Dashboard -> Project -> **Logs**.
+2. Look for red error messages.
+3. Common errors:
+   - `MongooseServerSelectionError`: See the MongoDB fix above.
+   - `Missing secret`: You forgot to add `AUTH_SECRET` to Vercel Environment Variables.
+
+### Redirects towards localhost
+If you are redirected to `localhost:3000` after login on the deployed site:
+1. Check Vercel Environment Variables.
+2. Ensure `NEXTAUTH_URL` is set to your Vercel domain (e.g., `https://console-cv.vercel.app`), NOT `http://localhost:3000`.
 - [ ] Test portfolio on mobile devices
 - [ ] Verify SEO meta tags with [metatags.io](https://metatags.io)
 
 ---
 
-## Troubleshooting
 
 ### Build Fails
 
