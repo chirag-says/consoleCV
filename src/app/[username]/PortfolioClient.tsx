@@ -4,9 +4,10 @@
 // Handles client-side rendering of the portfolio page with theme selection
 
 import React, { useState, useEffect } from "react";
-import { Loader2, AlertCircle, Rocket } from "lucide-react";
+import { Loader2, AlertCircle, Terminal } from "lucide-react";
 import dynamic from "next/dynamic";
 import type { ResumeData } from "@/types/resume";
+import ScrambleText from "@/components/ui/ScrambleText";
 
 // Dynamically import Theme Components to optimize bundle size
 const CyberTheme = dynamic(() => import("@/components/portfolio/CyberTheme"), {
@@ -30,19 +31,29 @@ const MinimalTheme = dynamic(() => import("@/components/portfolio/MinimalTheme")
 
 function PortfolioLoadingScreen() {
     return (
-        <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center">
-            <div className="flex flex-col items-center gap-6">
-                <div className="w-16 h-16 rounded-full bg-slate-900 border-2 border-slate-800 flex items-center justify-center animate-pulse">
-                    <Rocket className="w-8 h-8 text-indigo-500" />
+        <div className="min-h-screen bg-black flex flex-col items-center justify-center">
+            <div className="flex flex-col items-center gap-6 font-mono">
+                <div className="w-16 h-16 rounded-full bg-emerald-950/50 border-2 border-emerald-900/50 flex items-center justify-center animate-pulse shadow-[0_0_30px_rgba(16,185,129,0.3)]">
+                    <Terminal className="w-8 h-8 text-emerald-500" />
                 </div>
-                <div className="flex items-center gap-3">
-                    <Loader2 className="w-5 h-5 text-indigo-500 animate-spin" />
-                    <p className="text-slate-400 font-medium">Loading portfolio...</p>
+                <div className="flex flex-col items-center gap-2">
+                    <div className="flex items-center gap-3">
+                        <Loader2 className="w-4 h-4 text-emerald-500 animate-spin" />
+                        <ScrambleText
+                            text="Initializing system..."
+                            speed={30}
+                            className="text-emerald-400 text-sm"
+                        />
+                    </div>
+                    <p className="text-slate-600 text-xs">
+                        <span className="text-emerald-600">$</span> loading portfolio.config
+                    </p>
                 </div>
             </div>
         </div>
     );
 }
+
 
 // =============================================================================
 // ERROR SCREEN COMPONENT

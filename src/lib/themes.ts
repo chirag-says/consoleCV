@@ -16,7 +16,7 @@ export const THEME_INFO: Record<ThemeId, { name: string; description: string }> 
     },
     terminal: {
         name: "Terminal",
-        description: "Developer-focused theme that looks like a code editor",
+        description: "Futuristic console with neural network & neon effects",
     },
     minimal: {
         name: "Minimal",

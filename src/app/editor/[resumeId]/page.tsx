@@ -34,6 +34,7 @@ import {
     AtsAnalyzer,
 } from "@/components/editor";
 import GitHubImporter from "@/components/editor/GitHubImporter";
+import { SoundToggle } from "@/components/ui/KeyboardSounds";
 import type { Project } from "@/types/resume";
 
 // Dynamically import PDF components to avoid SSR issues
@@ -271,6 +272,7 @@ export default function EditorPage() {
                                     {saveMessage}
                                 </span>
                             )}
+                            <SoundToggle className="border border-slate-700" />
                             <button
                                 onClick={() => setIsAtsOpen(true)}
                                 className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-500 hover:to-purple-500 text-white font-medium rounded-lg transition-all shadow-lg shadow-violet-500/20"

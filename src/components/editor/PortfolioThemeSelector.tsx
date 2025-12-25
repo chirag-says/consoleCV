@@ -51,16 +51,31 @@ function ThemeCard({ id, isSelected, onClick }: ThemeCardProps) {
                 );
             case "terminal":
                 return (
-                    <div className="h-full w-full bg-black border border-zinc-800 p-2 overflow-hidden font-mono text-[8px] leading-tight">
-                        <div className="flex gap-1 mb-1 opacity-50">
-                            <div className="w-1.5 h-1.5 rounded-full bg-red-500" />
-                            <div className="w-1.5 h-1.5 rounded-full bg-yellow-500" />
-                            <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                    <div className="h-full w-full bg-black border border-emerald-900/50 p-2 overflow-hidden font-mono text-[8px] leading-tight relative">
+                        {/* Neural network nodes preview */}
+                        <div className="absolute inset-0">
+                            <div className="absolute top-2 left-3 w-1 h-1 rounded-full bg-emerald-500 shadow-[0_0_4px_rgba(16,185,129,0.8)]" />
+                            <div className="absolute top-4 right-4 w-1 h-1 rounded-full bg-emerald-400/60" />
+                            <div className="absolute bottom-3 left-5 w-1 h-1 rounded-full bg-emerald-500/40" />
+                            <div className="absolute bottom-4 right-3 w-1 h-1 rounded-full bg-emerald-400 shadow-[0_0_4px_rgba(16,185,129,0.6)]" />
+                            {/* Connection lines */}
+                            <svg className="absolute inset-0 w-full h-full opacity-30">
+                                <line x1="12" y1="8" x2="60" y2="16" stroke="#10b981" strokeWidth="0.5" />
+                                <line x1="20" y1="52" x2="56" y2="48" stroke="#10b981" strokeWidth="0.5" />
+                            </svg>
                         </div>
-                        <div className="text-emerald-500">{">"} init_portfolio</div>
-                        <div className="text-zinc-500 mt-1">{"{"}</div>
-                        <div className="pl-1 text-blue-400">&quot;dev&quot;: true</div>
-                        <div className="text-zinc-500">{"}"}</div>
+                        {/* Terminal content */}
+                        <div className="relative z-10">
+                            <div className="flex gap-1 mb-1 opacity-50">
+                                <div className="w-1.5 h-1.5 rounded-full bg-red-500 shadow-[0_0_3px_rgba(239,68,68,0.5)]" />
+                                <div className="w-1.5 h-1.5 rounded-full bg-yellow-500 shadow-[0_0_3px_rgba(234,179,8,0.5)]" />
+                                <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_3px_rgba(16,185,129,0.5)]" />
+                            </div>
+                            <div className="text-emerald-400" style={{ textShadow: '0 0 4px rgba(16,185,129,0.5)' }}>{">"} init_dev</div>
+                            <div className="text-zinc-500 mt-1">{"{"}</div>
+                            <div className="pl-1 text-blue-400">&quot;fx&quot;: &quot;neon&quot;</div>
+                            <div className="text-zinc-500">{"}"}</div>
+                        </div>
                     </div>
                 );
             case "minimal":
