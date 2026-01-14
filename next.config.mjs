@@ -20,12 +20,6 @@ const nextConfig = {
                         key: "Strict-Transport-Security",
                         value: "max-age=63072000; includeSubDomains; preload",
                     },
-                    // ---------- Clickjacking Protection ----------
-                    // Prevents the page from being embedded in iframes on other domains
-                    {
-                        key: "X-Frame-Options",
-                        value: "SAMEORIGIN",
-                    },
                     // ---------- MIME Type Sniffing Prevention ----------
                     // Prevents browsers from MIME-sniffing a response away from declared content-type
                     {
@@ -79,6 +73,9 @@ const nextConfig = {
                             "base-uri 'self'",
                             // Object/embed: none (prevents Flash, etc.)
                             "object-src 'none'",
+                            // Frame ancestors: controls who can embed this page in iframes
+                            // Allows embedding from opscores.in domains and localhost for development
+                            "frame-ancestors 'self' https://opscores.in https://*.opscores.in http://localhost:3000",
                             // Upgrade insecure requests
                             "upgrade-insecure-requests",
                         ].join("; "),
